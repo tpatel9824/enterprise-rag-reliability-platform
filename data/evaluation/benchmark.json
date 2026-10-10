@@ -1,0 +1,742 @@
+{
+  "benchmark_name": "AcmeFlow RAG Reliability Benchmark v1",
+  "version": "1.0",
+  "case_count": 60,
+  "cases": [
+    {
+      "id": "Q001",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How many vacation days does a full-time employee receive in 2026?",
+      "expected_documents": [
+        "hr_vacation_policy_2026"
+      ],
+      "expected_facts": [
+        "20 vacation days per calendar year"
+      ]
+    },
+    {
+      "id": "Q002",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How long can an approved card refund take to appear on a statement?",
+      "expected_documents": [
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "5 to 10 business days"
+      ]
+    },
+    {
+      "id": "Q003",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What is the standard API rate limit per API key?",
+      "expected_documents": [
+        "product_api_limits_2026"
+      ],
+      "expected_facts": [
+        "60 requests per minute"
+      ]
+    },
+    {
+      "id": "Q004",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "What is the current vacation allowance in 2026?",
+      "expected_documents": [
+        "hr_vacation_policy_2026"
+      ],
+      "expected_facts": [
+        "20 vacation days"
+      ],
+      "excluded_documents": [
+        "hr_vacation_policy_2025"
+      ]
+    },
+    {
+      "id": "Q005",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "What was the vacation allowance before the 2026 policy?",
+      "expected_documents": [
+        "hr_vacation_policy_2025"
+      ],
+      "expected_facts": [
+        "15 vacation days"
+      ]
+    },
+    {
+      "id": "Q006",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "What is the current refund timing, not the 2025 timing?",
+      "expected_documents": [
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "3 business days to initiate",
+        "5 to 10 business days"
+      ],
+      "excluded_documents": [
+        "product_refund_policy_2025"
+      ]
+    },
+    {
+      "id": "Q007",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "Does cancellation automatically create a refund?",
+      "expected_documents": [
+        "product_subscription_policy_2026",
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "cancellation does not automatically create a refund",
+        "refund policy governs eligibility"
+      ]
+    },
+    {
+      "id": "Q008",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "What should support do when an enterprise SLA differs from the standard support target?",
+      "expected_documents": [
+        "support_sla_2026",
+        "support_enterprise_handling_2026",
+        "product_sla_2026"
+      ],
+      "expected_facts": [
+        "check signed agreement",
+        "contract-specific commitments"
+      ]
+    },
+    {
+      "id": "Q009",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "What should an application do after receiving HTTP 429?",
+      "expected_documents": [
+        "product_api_limits_2026",
+        "support_api_429_2026"
+      ],
+      "expected_facts": [
+        "exponential backoff",
+        "jitter"
+      ]
+    },
+    {
+      "id": "Q010",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "What should support do with a suspected credential compromise?",
+      "expected_documents": [
+        "cross_security_vs_support_2026",
+        "sec_security_incident_2026"
+      ],
+      "expected_facts": [
+        "escalate immediately",
+        "do not independently investigate"
+      ]
+    },
+    {
+      "id": "Q011",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What is AcmeFlow's cryptocurrency refund policy?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q012",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What is AcmeFlow's policy for quantum-computing subscriptions?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q013",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What exact stock option percentage does every manager receive?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q014",
+      "category": "authorization",
+      "answerable": true,
+      "question": "What access controls should apply to production application accounts?",
+      "expected_documents": [
+        "sec_access_control_2026",
+        "sec_security_policy_2026"
+      ],
+      "expected_facts": [
+        "least privilege",
+        "business justification"
+      ],
+      "required_role": "security_or_engineering"
+    },
+    {
+      "id": "Q015",
+      "category": "authorization",
+      "answerable": true,
+      "question": "What should support verify before changing an account administrator?",
+      "expected_documents": [
+        "support_account_changes_2026"
+      ],
+      "expected_facts": [
+        "identity",
+        "authority"
+      ],
+      "required_role": "support"
+    },
+    {
+      "id": "Q016",
+      "category": "provenance",
+      "answerable": true,
+      "question": "Which policy says card refunds may take 5 to 10 business days?",
+      "expected_documents": [
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "product_refund_policy_2026"
+      ]
+    },
+    {
+      "id": "Q017",
+      "category": "provenance",
+      "answerable": true,
+      "question": "Which document says production API keys must not be committed to source control?",
+      "expected_documents": [
+        "eng_api_auth_2026"
+      ],
+      "expected_facts": [
+        "eng_api_auth_2026"
+      ]
+    },
+    {
+      "id": "Q018",
+      "category": "reasoning",
+      "answerable": true,
+      "question": "A customer wants to cancel an annual subscription halfway through the term. Can support promise a refund?",
+      "expected_documents": [
+        "product_subscription_policy_2026",
+        "product_refund_policy_2026",
+        "support_refund_procedure_2026"
+      ],
+      "expected_facts": [
+        "annual subscriptions generally remain active",
+        "support may not promise a refund before approval"
+      ]
+    },
+    {
+      "id": "Q019",
+      "category": "reasoning",
+      "answerable": true,
+      "question": "A new employee needs production-data access on day one. What should the manager do?",
+      "expected_documents": [
+        "hr_onboarding_2026",
+        "sec_access_control_2026"
+      ],
+      "expected_facts": [
+        "confirm role-specific access needs",
+        "least privilege"
+      ]
+    },
+    {
+      "id": "Q020",
+      "category": "reasoning",
+      "answerable": true,
+      "question": "Can data under legal hold be deleted under the normal retention schedule?",
+      "expected_documents": [
+        "comp_legal_hold_2026",
+        "comp_data_retention_2026",
+        "sec_data_retention_2026"
+      ],
+      "expected_facts": [
+        "legal hold takes precedence",
+        "do not delete until released"
+      ]
+    },
+    {
+      "id": "Q021",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What is the standard support response target?",
+      "expected_documents": [
+        "support_sla_2026"
+      ],
+      "expected_facts": [
+        "one business day"
+      ]
+    },
+    {
+      "id": "Q022",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How long does expense reimbursement normally take?",
+      "expected_documents": [
+        "fin_expense_reimbursement_2026"
+      ],
+      "expected_facts": [
+        "10 business days"
+      ]
+    },
+    {
+      "id": "Q023",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What are standard invoice payment terms?",
+      "expected_documents": [
+        "fin_payment_terms_2026"
+      ],
+      "expected_facts": [
+        "Net 30"
+      ]
+    },
+    {
+      "id": "Q024",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How many remote days are allowed for eligible employees?",
+      "expected_documents": [
+        "hr_remote_work_policy_2026"
+      ],
+      "expected_facts": [
+        "three days per week"
+      ]
+    },
+    {
+      "id": "Q025",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How much paid parental leave is available?",
+      "expected_documents": [
+        "hr_parental_leave_2026"
+      ],
+      "expected_facts": [
+        "12 weeks"
+      ]
+    },
+    {
+      "id": "Q026",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What should application logs exclude?",
+      "expected_documents": [
+        "eng_logging_standard_2026"
+      ],
+      "expected_facts": [
+        "passwords",
+        "access tokens"
+      ]
+    },
+    {
+      "id": "Q027",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What is required for a production deployment?",
+      "expected_documents": [
+        "eng_deployment_2026"
+      ],
+      "expected_facts": [
+        "automated tests",
+        "artifact versioning",
+        "rollback capability"
+      ]
+    },
+    {
+      "id": "Q028",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How should sensitive data at rest be protected?",
+      "expected_documents": [
+        "sec_encryption_standard_2026"
+      ],
+      "expected_facts": [
+        "encryption at rest",
+        "managed key management"
+      ]
+    },
+    {
+      "id": "Q029",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What happens when a legal hold is issued?",
+      "expected_documents": [
+        "comp_legal_hold_2026"
+      ],
+      "expected_facts": [
+        "preserve affected records"
+      ]
+    },
+    {
+      "id": "Q030",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What training is mandatory for employees?",
+      "expected_documents": [
+        "comp_security_training_2026"
+      ],
+      "expected_facts": [
+        "security and privacy training"
+      ]
+    },
+    {
+      "id": "Q031",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What should support confirm before submitting a refund?",
+      "expected_documents": [
+        "support_refund_procedure_2026"
+      ],
+      "expected_facts": [
+        "account",
+        "contract type"
+      ]
+    },
+    {
+      "id": "Q032",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Can Enterprise customers have higher API limits?",
+      "expected_documents": [
+        "product_api_limits_2026"
+      ],
+      "expected_facts": [
+        "negotiated higher limits"
+      ]
+    },
+    {
+      "id": "Q033",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What is required before onboarding a vendor with sensitive access?",
+      "expected_documents": [
+        "sec_vendor_risk_2026"
+      ],
+      "expected_facts": [
+        "security review"
+      ]
+    },
+    {
+      "id": "Q034",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What should be on a release-readiness checklist?",
+      "expected_documents": [
+        "cross_release_readiness_2026"
+      ],
+      "expected_facts": [
+        "rollback steps",
+        "automated tests"
+      ]
+    },
+    {
+      "id": "Q035",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Where should customer deletion requests be routed?",
+      "expected_documents": [
+        "cross_customer_data_request_2026"
+      ],
+      "expected_facts": [
+        "privacy workflow"
+      ]
+    },
+    {
+      "id": "Q036",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Which refund policy applies in 2026?",
+      "expected_documents": [
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "2026 Refund Policy"
+      ]
+    },
+    {
+      "id": "Q037",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Which policy superseded the 2025 vacation policy?",
+      "expected_documents": [
+        "hr_vacation_policy_2026"
+      ],
+      "expected_facts": [
+        "2026 Vacation Policy"
+      ]
+    },
+    {
+      "id": "Q038",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "How many vacation days does a part-time contractor receive?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q039",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What is the exact engineering-manager salary band?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q040",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What is the company policy for trading cryptocurrency with company funds?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q041",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How many vacation days does a full-time employee receive in 2026? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "hr_vacation_policy_2026"
+      ],
+      "expected_facts": [
+        "20 vacation days per calendar year"
+      ]
+    },
+    {
+      "id": "Q042",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "Please explain what should support do when an enterprise SLA differs from the standard support target?",
+      "expected_documents": [
+        "support_sla_2026",
+        "support_enterprise_handling_2026",
+        "product_sla_2026"
+      ],
+      "expected_facts": [
+        "check signed agreement",
+        "contract-specific commitments"
+      ]
+    },
+    {
+      "id": "Q043",
+      "category": "authorization",
+      "answerable": true,
+      "question": "Please explain what should support verify before changing an account administrator?",
+      "expected_documents": [
+        "support_account_changes_2026"
+      ],
+      "expected_facts": [
+        "identity",
+        "authority"
+      ],
+      "required_role": "support"
+    },
+    {
+      "id": "Q044",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How long does expense reimbursement normally take? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "fin_expense_reimbursement_2026"
+      ],
+      "expected_facts": [
+        "10 business days"
+      ]
+    },
+    {
+      "id": "Q045",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Please explain what happens when a legal hold is issued?",
+      "expected_documents": [
+        "comp_legal_hold_2026"
+      ],
+      "expected_facts": [
+        "preserve affected records"
+      ]
+    },
+    {
+      "id": "Q046",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Which refund policy applies in 2026? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "2026 Refund Policy"
+      ]
+    },
+    {
+      "id": "Q047",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Could you explain what is the standard API rate limit per API key?",
+      "expected_documents": [
+        "product_api_limits_2026"
+      ],
+      "expected_facts": [
+        "60 requests per minute"
+      ]
+    },
+    {
+      "id": "Q048",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "Please explain what should support do with a suspected credential compromise?",
+      "expected_documents": [
+        "cross_security_vs_support_2026",
+        "sec_security_incident_2026"
+      ],
+      "expected_facts": [
+        "escalate immediately",
+        "do not independently investigate"
+      ]
+    },
+    {
+      "id": "Q049",
+      "category": "provenance",
+      "answerable": true,
+      "question": "Which document says production API keys must not be committed to source control? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "eng_api_auth_2026"
+      ],
+      "expected_facts": [
+        "eng_api_auth_2026"
+      ]
+    },
+    {
+      "id": "Q050",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How many remote days are allowed for eligible employees? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "hr_remote_work_policy_2026"
+      ],
+      "expected_facts": [
+        "three days per week"
+      ]
+    },
+    {
+      "id": "Q051",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Please explain what should support confirm before submitting a refund?",
+      "expected_documents": [
+        "support_refund_procedure_2026"
+      ],
+      "expected_facts": [
+        "account",
+        "contract type"
+      ]
+    },
+    {
+      "id": "Q052",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "How many vacation days does a part-time contractor receive? Please answer using the approved knowledge base.",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q053",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "Please explain what was the vacation allowance before the 2026 policy?",
+      "expected_documents": [
+        "hr_vacation_policy_2025"
+      ],
+      "expected_facts": [
+        "15 vacation days"
+      ]
+    },
+    {
+      "id": "Q054",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "Could you explain what is AcmeFlow's policy for quantum-computing subscriptions?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q055",
+      "category": "reasoning",
+      "answerable": true,
+      "question": "A new employee needs production-data access on day one. What should the manager do? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "hr_onboarding_2026",
+        "sec_access_control_2026"
+      ],
+      "expected_facts": [
+        "confirm role-specific access needs",
+        "least privilege"
+      ]
+    },
+    {
+      "id": "Q056",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Please explain what should application logs exclude?",
+      "expected_documents": [
+        "eng_logging_standard_2026"
+      ],
+      "expected_facts": [
+        "passwords",
+        "access tokens"
+      ]
+    },
+    {
+      "id": "Q057",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "Could you explain what is required before onboarding a vendor with sensitive access?",
+      "expected_documents": [
+        "sec_vendor_risk_2026"
+      ],
+      "expected_facts": [
+        "security review"
+      ]
+    },
+    {
+      "id": "Q058",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "Could you explain what is the company policy for trading cryptocurrency with company funds?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "Q059",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "Does cancellation automatically create a refund? Please answer using the approved knowledge base.",
+      "expected_documents": [
+        "product_subscription_policy_2026",
+        "product_refund_policy_2026"
+      ],
+      "expected_facts": [
+        "cancellation does not automatically create a refund",
+        "refund policy governs eligibility"
+      ]
+    },
+    {
+      "id": "Q060",
+      "category": "authorization",
+      "answerable": true,
+      "question": "Please explain what access controls should apply to production application accounts?",
+      "expected_documents": [
+        "sec_access_control_2026",
+        "sec_security_policy_2026"
+      ],
+      "expected_facts": [
+        "least privilege",
+        "business justification"
+      ],
+      "required_role": "security_or_engineering"
+    }
+  ]
+}

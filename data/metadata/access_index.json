@@ -1,0 +1,1039 @@
+[
+  {
+    "document_id": "hr_employee_handbook_2026",
+    "department": "Human Resources",
+    "version": "4.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "handbook",
+      "training"
+    ]
+  },
+  {
+    "document_id": "hr_vacation_policy_2026",
+    "department": "Human Resources",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "vacation",
+      "leave"
+    ]
+  },
+  {
+    "document_id": "hr_vacation_policy_2025",
+    "department": "Human Resources",
+    "version": "2.0",
+    "effective_date": "2025-01-01",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "vacation",
+      "historical"
+    ]
+  },
+  {
+    "document_id": "hr_remote_work_policy_2026",
+    "department": "Human Resources",
+    "version": "2.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "remote",
+      "hybrid"
+    ]
+  },
+  {
+    "document_id": "hr_parental_leave_2026",
+    "department": "Human Resources",
+    "version": "1.0",
+    "effective_date": "2026-01-15",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "parental",
+      "leave"
+    ]
+  },
+  {
+    "document_id": "hr_expense_policy_2026",
+    "department": "Human Resources",
+    "version": "2.0",
+    "effective_date": "2026-03-01",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "finance",
+      "executive"
+    ],
+    "tags": [
+      "expense",
+      "travel"
+    ]
+  },
+  {
+    "document_id": "hr_performance_review_2026",
+    "department": "Human Resources",
+    "version": "1.0",
+    "effective_date": "2026-01-10",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "performance",
+      "reviews"
+    ]
+  },
+  {
+    "document_id": "hr_onboarding_2026",
+    "department": "Human Resources",
+    "version": "2.0",
+    "effective_date": "2026-01-05",
+    "access_roles": [
+      "employee",
+      "manager",
+      "hr",
+      "it",
+      "executive"
+    ],
+    "tags": [
+      "onboarding",
+      "access"
+    ]
+  },
+  {
+    "document_id": "product_pricing_2026",
+    "department": "Product",
+    "version": "5.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "pricing",
+      "plans"
+    ]
+  },
+  {
+    "document_id": "product_subscription_policy_2026",
+    "department": "Product",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "subscription",
+      "cancellation"
+    ]
+  },
+  {
+    "document_id": "product_refund_policy_2026",
+    "department": "Product",
+    "version": "4.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "refund",
+      "payments"
+    ]
+  },
+  {
+    "document_id": "product_refund_policy_2025",
+    "department": "Product",
+    "version": "3.0",
+    "effective_date": "2025-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "refund",
+      "historical"
+    ]
+  },
+  {
+    "document_id": "product_api_limits_2026",
+    "department": "Product",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "support",
+      "engineering",
+      "product",
+      "sales",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "api",
+      "limits"
+    ]
+  },
+  {
+    "document_id": "product_enterprise_features_2026",
+    "department": "Product",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "enterprise",
+      "features"
+    ]
+  },
+  {
+    "document_id": "product_sla_2026",
+    "department": "Product",
+    "version": "1.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "sla",
+      "support"
+    ]
+  },
+  {
+    "document_id": "product_usage_policy_2026",
+    "department": "Product",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "product",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "acceptable-use",
+      "abuse"
+    ]
+  },
+  {
+    "document_id": "eng_api_auth_2026",
+    "department": "Engineering",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "engineering",
+      "support",
+      "security",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "api",
+      "authentication"
+    ]
+  },
+  {
+    "document_id": "eng_api_versioning_2026",
+    "department": "Engineering",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "engineering",
+      "support",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "api",
+      "versioning"
+    ]
+  },
+  {
+    "document_id": "eng_deployment_2026",
+    "department": "Engineering",
+    "version": "4.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "engineering",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "deployment",
+      "cicd"
+    ]
+  },
+  {
+    "document_id": "eng_incident_response_2026",
+    "department": "Engineering",
+    "version": "2.0",
+    "effective_date": "2026-01-20",
+    "access_roles": [
+      "engineering",
+      "security",
+      "support",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "incident",
+      "sre"
+    ]
+  },
+  {
+    "document_id": "eng_logging_standard_2026",
+    "department": "Engineering",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "engineering",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "logging",
+      "observability"
+    ]
+  },
+  {
+    "document_id": "eng_testing_standard_2026",
+    "department": "Engineering",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "testing",
+      "quality"
+    ]
+  },
+  {
+    "document_id": "eng_data_pipeline_2026",
+    "department": "Engineering",
+    "version": "1.0",
+    "effective_date": "2026-03-01",
+    "access_roles": [
+      "engineering",
+      "security",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "data",
+      "pipeline"
+    ]
+  },
+  {
+    "document_id": "eng_feature_flags_2026",
+    "department": "Engineering",
+    "version": "1.0",
+    "effective_date": "2026-02-15",
+    "access_roles": [
+      "engineering",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "feature-flags",
+      "release"
+    ]
+  },
+  {
+    "document_id": "sec_security_policy_2026",
+    "department": "Security",
+    "version": "5.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "security",
+      "access"
+    ]
+  },
+  {
+    "document_id": "sec_password_policy_2026",
+    "department": "Security",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "security",
+      "it",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "password",
+      "mfa"
+    ]
+  },
+  {
+    "document_id": "sec_access_control_2026",
+    "department": "Security",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "security",
+      "engineering",
+      "it",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "rbac",
+      "iam"
+    ]
+  },
+  {
+    "document_id": "sec_data_retention_2026",
+    "department": "Security",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "security",
+      "compliance",
+      "engineering",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "retention",
+      "privacy"
+    ]
+  },
+  {
+    "document_id": "sec_encryption_standard_2026",
+    "department": "Security",
+    "version": "2.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "security",
+      "engineering",
+      "compliance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "encryption",
+      "keys"
+    ]
+  },
+  {
+    "document_id": "sec_security_incident_2026",
+    "department": "Security",
+    "version": "3.0",
+    "effective_date": "2026-01-10",
+    "access_roles": [
+      "security",
+      "engineering",
+      "support",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "incident",
+      "credentials"
+    ]
+  },
+  {
+    "document_id": "sec_vendor_risk_2026",
+    "department": "Security",
+    "version": "1.0",
+    "effective_date": "2026-03-01",
+    "access_roles": [
+      "security",
+      "compliance",
+      "finance",
+      "legal",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "vendor",
+      "risk"
+    ]
+  },
+  {
+    "document_id": "sec_device_standard_2026",
+    "department": "Security",
+    "version": "1.0",
+    "effective_date": "2026-01-05",
+    "access_roles": [
+      "employee",
+      "security",
+      "it",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "device",
+      "endpoint"
+    ]
+  },
+  {
+    "document_id": "support_refund_procedure_2026",
+    "department": "Customer Support",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "support",
+      "sales",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "refund",
+      "workflow"
+    ]
+  },
+  {
+    "document_id": "support_escalation_policy_2026",
+    "department": "Customer Support",
+    "version": "2.0",
+    "effective_date": "2026-01-15",
+    "access_roles": [
+      "support",
+      "engineering",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "escalation",
+      "severity"
+    ]
+  },
+  {
+    "document_id": "support_sla_2026",
+    "department": "Customer Support",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "support",
+      "sales",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "sla",
+      "response"
+    ]
+  },
+  {
+    "document_id": "support_troubleshooting_login_2026",
+    "department": "Customer Support",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "support",
+      "engineering",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "login",
+      "password"
+    ]
+  },
+  {
+    "document_id": "support_api_429_2026",
+    "department": "Customer Support",
+    "version": "1.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "support",
+      "engineering",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "api",
+      "429"
+    ]
+  },
+  {
+    "document_id": "support_priority_incident_2026",
+    "department": "Customer Support",
+    "version": "1.0",
+    "effective_date": "2026-01-20",
+    "access_roles": [
+      "support",
+      "engineering",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "incident",
+      "priority"
+    ]
+  },
+  {
+    "document_id": "support_account_changes_2026",
+    "department": "Customer Support",
+    "version": "1.0",
+    "effective_date": "2026-03-01",
+    "access_roles": [
+      "support",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "account",
+      "verification"
+    ]
+  },
+  {
+    "document_id": "support_enterprise_handling_2026",
+    "department": "Customer Support",
+    "version": "1.0",
+    "effective_date": "2026-02-15",
+    "access_roles": [
+      "support",
+      "sales",
+      "product",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "enterprise",
+      "contracts"
+    ]
+  },
+  {
+    "document_id": "fin_billing_policy_2026",
+    "department": "Finance",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "support",
+      "sales",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "billing",
+      "invoices"
+    ]
+  },
+  {
+    "document_id": "fin_invoice_policy_2026",
+    "department": "Finance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "support",
+      "sales",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "invoice",
+      "audit"
+    ]
+  },
+  {
+    "document_id": "fin_expense_reimbursement_2026",
+    "department": "Finance",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "expense",
+      "reimbursement"
+    ]
+  },
+  {
+    "document_id": "fin_travel_policy_2026",
+    "department": "Finance",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "employee",
+      "manager",
+      "hr",
+      "executive"
+    ],
+    "tags": [
+      "travel",
+      "expenses"
+    ]
+  },
+  {
+    "document_id": "fin_payment_terms_2026",
+    "department": "Finance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "sales",
+      "support",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "payments",
+      "terms"
+    ]
+  },
+  {
+    "document_id": "fin_refund_accounting_2026",
+    "department": "Finance",
+    "version": "1.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "finance",
+      "support",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "refund",
+      "accounting"
+    ]
+  },
+  {
+    "document_id": "fin_discount_approval_2026",
+    "department": "Finance",
+    "version": "2.0",
+    "effective_date": "2026-01-15",
+    "access_roles": [
+      "finance",
+      "sales",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "discount",
+      "sales"
+    ]
+  },
+  {
+    "document_id": "fin_close_process_2026",
+    "department": "Finance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "close",
+      "accounting"
+    ]
+  },
+  {
+    "document_id": "comp_privacy_2026",
+    "department": "Compliance",
+    "version": "3.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "compliance",
+      "security",
+      "engineering",
+      "support",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "privacy",
+      "data"
+    ]
+  },
+  {
+    "document_id": "comp_gdpr_2026",
+    "department": "Compliance",
+    "version": "2.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "compliance",
+      "security",
+      "support",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "gdpr",
+      "privacy"
+    ]
+  },
+  {
+    "document_id": "comp_data_retention_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-02-01",
+    "access_roles": [
+      "compliance",
+      "security",
+      "finance",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "retention",
+      "legal-hold"
+    ]
+  },
+  {
+    "document_id": "comp_audit_logging_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-01-15",
+    "access_roles": [
+      "compliance",
+      "security",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "audit",
+      "logging"
+    ]
+  },
+  {
+    "document_id": "comp_data_processing_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "compliance",
+      "security",
+      "engineering",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "processing",
+      "privacy"
+    ]
+  },
+  {
+    "document_id": "comp_vendor_due_diligence_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-03-01",
+    "access_roles": [
+      "compliance",
+      "security",
+      "finance",
+      "legal",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "vendor",
+      "due-diligence"
+    ]
+  },
+  {
+    "document_id": "comp_security_training_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-01-05",
+    "access_roles": [
+      "employee",
+      "manager",
+      "compliance",
+      "security",
+      "executive"
+    ],
+    "tags": [
+      "training",
+      "privacy"
+    ]
+  },
+  {
+    "document_id": "comp_legal_hold_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "compliance",
+      "legal",
+      "security",
+      "engineering",
+      "finance",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "legal-hold",
+      "retention"
+    ]
+  },
+  {
+    "document_id": "cross_customer_contract_precedence_2026",
+    "department": "Product",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "employee",
+      "sales",
+      "support",
+      "finance",
+      "product",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "contracts",
+      "precedence"
+    ]
+  },
+  {
+    "document_id": "cross_security_vs_support_2026",
+    "department": "Security",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "support",
+      "security",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "support",
+      "security"
+    ]
+  },
+  {
+    "document_id": "cross_release_readiness_2026",
+    "department": "Engineering",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "engineering",
+      "product",
+      "security",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "release",
+      "checklist"
+    ]
+  },
+  {
+    "document_id": "cross_customer_data_request_2026",
+    "department": "Compliance",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "access_roles": [
+      "support",
+      "compliance",
+      "security",
+      "engineering",
+      "manager",
+      "executive"
+    ],
+    "tags": [
+      "privacy",
+      "workflow"
+    ]
+  }
+]

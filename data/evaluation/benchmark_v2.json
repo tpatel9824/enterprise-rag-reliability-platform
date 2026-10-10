@@ -1,0 +1,139 @@
+{
+  "benchmark_name": "AcmeFlow RAG Multi-section Benchmark v2",
+  "version": "2.0",
+  "case_count": 15,
+  "corpus": "data/documents_v2",
+  "cases": [
+    {
+      "id": "V2Q001",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How long can a bank take to display an approved card refund under the current policy?",
+      "expected_documents": ["product_refund_policy_2026_v2"],
+      "expected_facts": ["five to ten business days"]
+    },
+    {
+      "id": "V2Q002",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "What is the current refund request window in 2026?",
+      "expected_documents": ["product_refund_policy_2026_v2"],
+      "excluded_documents": ["product_refund_policy_2025_v2"],
+      "expected_facts": ["14 calendar days"]
+    },
+    {
+      "id": "V2Q003",
+      "category": "temporal_conflict",
+      "answerable": true,
+      "question": "Before the 2026 refund policy, how long could a bank take to display the credit?",
+      "expected_documents": ["product_refund_policy_2025_v2"],
+      "expected_facts": ["seven to fourteen business days"]
+    },
+    {
+      "id": "V2Q004",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "Does cancelling an annual subscription guarantee a refund, and what must Support do?",
+      "expected_documents": [
+        "product_subscription_policy_2026_v2",
+        "product_refund_policy_2026_v2",
+        "support_operations_2026_v2"
+      ],
+      "expected_facts": ["does not automatically create a refund", "must not promise approval"]
+    },
+    {
+      "id": "V2Q005",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What approvals are required for production access?",
+      "expected_documents": ["sec_access_control_2026_v2"],
+      "expected_facts": ["manager approval", "system-owner approval"]
+    },
+    {
+      "id": "V2Q006",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "How should teams handle a suspected credential compromise during a service incident?",
+      "expected_documents": [
+        "eng_incident_response_2026_v2",
+        "sec_incident_standard_2026_v2",
+        "support_operations_2026_v2"
+      ],
+      "expected_facts": ["escalated immediately to Security", "should not conduct an independent forensic investigation"]
+    },
+    {
+      "id": "V2Q007",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "What evidence is required for a production release?",
+      "expected_documents": ["eng_release_standard_2026_v2"],
+      "expected_facts": ["passing automated tests", "immutable artifact identifier", "documented rollback steps"]
+    },
+    {
+      "id": "V2Q008",
+      "category": "reasoning",
+      "answerable": true,
+      "question": "A recent deployment may have caused a severity-one outage. What response and release controls apply?",
+      "expected_documents": ["eng_incident_response_2026_v2", "eng_release_standard_2026_v2"],
+      "expected_facts": ["incident commander", "rollback"]
+    },
+    {
+      "id": "V2Q009",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "How many remote days may an eligible employee work each week?",
+      "expected_documents": ["hr_remote_work_2026_v2"],
+      "expected_facts": ["up to three days per week"]
+    },
+    {
+      "id": "V2Q010",
+      "category": "direct_lookup",
+      "answerable": true,
+      "question": "When does business travel require pre-approval?",
+      "expected_documents": ["hr_expense_2026_v2"],
+      "expected_facts": ["exceed two thousand dollars", "flight above twelve hundred dollars"]
+    },
+    {
+      "id": "V2Q011",
+      "category": "authorization",
+      "answerable": true,
+      "question": "What controls apply to emergency production access?",
+      "expected_documents": ["sec_access_control_2026_v2"],
+      "expected_facts": ["time-limited", "logged", "reviewed after use"],
+      "required_role": "security_or_engineering"
+    },
+    {
+      "id": "V2Q012",
+      "category": "authorization",
+      "answerable": true,
+      "question": "What must an agent verify before opening a refund request?",
+      "expected_documents": ["support_operations_2026_v2"],
+      "expected_facts": ["requester", "account", "charge", "contract type"],
+      "required_role": "support"
+    },
+    {
+      "id": "V2Q013",
+      "category": "multi_document",
+      "answerable": true,
+      "question": "What security rules apply when an employee works remotely?",
+      "expected_documents": ["hr_remote_work_2026_v2", "sec_access_control_2026_v2"],
+      "expected_facts": ["company-managed device", "least privilege"]
+    },
+    {
+      "id": "V2Q014",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "What is the meal reimbursement limit per day?",
+      "expected_documents": [],
+      "expected_facts": []
+    },
+    {
+      "id": "V2Q015",
+      "category": "unanswerable",
+      "answerable": false,
+      "question": "Which antivirus product must employees install on personal phones?",
+      "expected_documents": [],
+      "expected_facts": []
+    }
+  ]
+}

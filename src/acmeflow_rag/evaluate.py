@@ -1,0 +1,360 @@
+"""Offline evaluation for the Phase 1 retrieval and abstention baseline.
+
+The module keeps metric calculation separate from loading the production artifacts so the
+calculations can be tested with small, synthetic fixtures.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import argparse
+from collections import defaultdict
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterable
+
+from .config import settings
+from .retrieval import TfidfRetriever
+from .service import RagService
+
+
+DEFAULT_TOP_K = 5
+HISTORICAL_TERMS = re.compile(r"\b(before|previous|historical|prior|old|formerly)\b", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class Principal:
+    """A named evaluation fixture, not an authenticated application identity."""
+
+    name: str
+    roles: frozenset[str]
+
+
+# Benchmark labels describe scenarios, while these sets are roles understood by the retriever.
+# Keeping the mapping explicit prevents symbolic labels such as "security_or_engineering" from
+# accidentally being treated as real access roles.
+AUTHORIZATION_PRINCIPALS: dict[str, dict[str, tuple[Principal, ...]]] = {
+    "support": {
+        "authorized": (Principal("support-agent", frozenset({"support"})),),
+        "unauthorized": (Principal("ordinary-employee", frozenset({"employee"})),),
+    },
+    "security_or_engineering": {
+        "authorized": (
+            Principal("security-engineer", frozenset({"security"})),
+            Principal("software-engineer", frozenset({"engineering"})),
+        ),
+        "unauthorized": (Principal("sales-user", frozenset({"sales"})),),
+    },
+}
+
+
+def safe_divide(numerator: int | float, denominator: int | float) -> float:
+    return float(numerator / denominator) if denominator else 0.0
+
+
+def deduplicate_document_ids(results: Iterable[Any], top_k: int | None = None) -> list[str]:
+    """Return ranked, unique document IDs; repeated chunks do not consume document K."""
+
+    ids: list[str] = []
+    seen: set[str] = set()
+    for result in results:
+        document_id = result.chunk.document_id
+        if document_id in seen:
+            continue
+        seen.add(document_id)
+        ids.append(document_id)
+        if top_k is not None and len(ids) >= top_k:
+            break
+    return ids
+
+
+def reciprocal_rank(document_ids: Iterable[str], expected_documents: Iterable[str]) -> float:
+    wanted = set(expected_documents)
+    for rank, document_id in enumerate(document_ids, 1):
+        if document_id in wanted:
+            return 1.0 / rank
+    return 0.0
+
+
+def calculate_retrieval_metrics(
+    cases: list[dict[str, Any]],
+    results_by_case: dict[str, Iterable[Any]],
+    top_k: int = DEFAULT_TOP_K,
+) -> dict[str, Any]:
+    """Calculate document-level retrieval metrics for answerable cases.
+
+    Recall@K retains the original "any expected document" definition. Full-evidence success
+    requires every distinct expected document, and coverage is the fraction retrieved.
+    """
+
+    answerable = [case for case in cases if case["answerable"]]
+    recall_at_1 = recall_at_k = full_success = 0
+    mrr = coverage_sum = 0.0
+
+    for case in answerable:
+        ids = deduplicate_document_ids(results_by_case.get(case["id"], []), top_k)
+        expected = set(case.get("expected_documents", []))
+        found = expected.intersection(ids)
+        recall_at_1 += int(bool(expected.intersection(ids[:1])))
+        recall_at_k += int(bool(found))
+        full_success += int(bool(expected) and expected.issubset(ids))
+        mrr += reciprocal_rank(ids, expected)
+        coverage_sum += safe_divide(len(found), len(expected))
+
+    count = len(answerable)
+    return {
+        "answerable_cases": count,
+        "recall_at_1": safe_divide(recall_at_1, count),
+        "recall_at_5": safe_divide(recall_at_k, count),
+        "mrr": safe_divide(mrr, count),
+        "any_document_success_at_5": safe_divide(recall_at_k, count),
+        "full_evidence_success_at_5": safe_divide(full_success, count),
+        "mean_required_document_coverage_at_5": safe_divide(coverage_sum, count),
+    }
+
+
+def calculate_abstention_metrics(
+    cases: list[dict[str, Any]], decisions_by_case: dict[str, bool]
+) -> dict[str, Any]:
+    """Treat 'should abstain' as the positive class and calculate its confusion matrix."""
+
+    tp = fp = tn = fn = 0
+    for case in cases:
+        should_abstain = not case["answerable"]
+        did_abstain = decisions_by_case[case["id"]]
+        if should_abstain and did_abstain:
+            tp += 1
+        elif not should_abstain and did_abstain:
+            fp += 1
+        elif should_abstain and not did_abstain:
+            fn += 1
+        else:
+            tn += 1
+
+    precision = safe_divide(tp, tp + fp)
+    recall = safe_divide(tp, tp + fn)
+    return {
+        "positive_class": "should_abstain (benchmark answerable=false)",
+        "confusion_matrix": {
+            "true_positive": tp,
+            "false_positive": fp,
+            "true_negative": tn,
+            "false_negative": fn,
+        },
+        "precision": precision,
+        "recall": recall,
+        "f1": safe_divide(2 * precision * recall, precision + recall),
+        "false_abstention_rate": safe_divide(fp, fp + tn),
+        "missed_abstention_rate": safe_divide(fn, fn + tp),
+    }
+
+
+def is_explicit_historical_question(case: dict[str, Any]) -> bool:
+    return case.get("category") == "temporal_conflict" and bool(
+        HISTORICAL_TERMS.search(case["question"])
+    )
+
+
+def calculate_temporal_metrics(
+    cases: list[dict[str, Any]],
+    results_by_case: dict[str, Iterable[Any]],
+    top_k: int = DEFAULT_TOP_K,
+) -> dict[str, Any]:
+    """Separate current-policy exclusion checks from explicit historical lookups."""
+
+    current_cases = [
+        case for case in cases if case.get("excluded_documents") and not is_explicit_historical_question(case)
+    ]
+    historical_cases = [case for case in cases if is_explicit_historical_question(case)]
+    conflict_cases = conflict_documents = historical_any = historical_full = 0
+
+    for case in current_cases:
+        ids = set(deduplicate_document_ids(results_by_case.get(case["id"], []), top_k))
+        conflicts = ids.intersection(case["excluded_documents"])
+        conflict_cases += int(bool(conflicts))
+        conflict_documents += len(conflicts)
+
+    for case in historical_cases:
+        ids = set(deduplicate_document_ids(results_by_case.get(case["id"], []), top_k))
+        expected = set(case.get("expected_documents", []))
+        historical_any += int(bool(ids.intersection(expected)))
+        historical_full += int(bool(expected) and expected.issubset(ids))
+
+    return {
+        "current_policy_cases": len(current_cases),
+        "current_policy_cases_with_excluded_document_at_5": conflict_cases,
+        "current_policy_excluded_document_case_rate_at_5": safe_divide(conflict_cases, len(current_cases)),
+        "distinct_excluded_document_hits_at_5": conflict_documents,
+        "explicit_historical_cases": len(historical_cases),
+        "historical_any_document_success_at_5": safe_divide(historical_any, len(historical_cases)),
+        "historical_full_evidence_success_at_5": safe_divide(historical_full, len(historical_cases)),
+    }
+
+
+def calculate_per_category_metrics(
+    cases: list[dict[str, Any]],
+    results_by_case: dict[str, Iterable[Any]],
+    decisions_by_case: dict[str, bool],
+    top_k: int = DEFAULT_TOP_K,
+) -> dict[str, Any]:
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for case in cases:
+        grouped[case["category"]].append(case)
+
+    output: dict[str, Any] = {}
+    for category, category_cases in sorted(grouped.items()):
+        category_results = {case["id"]: results_by_case.get(case["id"], []) for case in category_cases}
+        category_decisions = {case["id"]: decisions_by_case[case["id"]] for case in category_cases}
+        output[category] = {
+            "case_count": len(category_cases),
+            "retrieval": calculate_retrieval_metrics(category_cases, category_results, top_k),
+            "abstention": calculate_abstention_metrics(category_cases, category_decisions),
+        }
+    return output
+
+
+def evaluate_authorization(
+    cases: list[dict[str, Any]], retriever: TfidfRetriever, top_k: int = DEFAULT_TOP_K
+) -> dict[str, Any]:
+    """Evaluate retrieval filters with declared role fixtures, not authentication or RBAC."""
+
+    acl_by_document: dict[str, set[str]] = defaultdict(set)
+    for chunk in retriever.chunks:
+        acl_by_document[chunk.document_id].update(chunk.access_roles)
+
+    authorized_trials = authorized_any = authorized_full = 0
+    unauthorized_trials = unauthorized_leaks = filter_violations = 0
+    unmapped_labels: set[str] = set()
+    trial_details: list[dict[str, Any]] = []
+
+    for case in (case for case in cases if case.get("required_role")):
+        label = case["required_role"]
+        fixtures = AUTHORIZATION_PRINCIPALS.get(label)
+        if fixtures is None:
+            unmapped_labels.add(label)
+            continue
+
+        for principal in fixtures["authorized"]:
+            results = retriever.search(case["question"], top_k, allowed_roles=set(principal.roles))
+            ids = set(deduplicate_document_ids(results, top_k))
+            accessible_expected = {
+                document_id
+                for document_id in case["expected_documents"]
+                if principal.roles.intersection(acl_by_document.get(document_id, set()))
+            }
+            authorized_trials += 1
+            authorized_any += int(bool(ids.intersection(accessible_expected)))
+            authorized_full += int(bool(accessible_expected) and accessible_expected.issubset(ids))
+            trial_details.append({
+                "case_id": case["id"], "principal": principal.name, "kind": "authorized",
+                "roles": sorted(principal.roles), "accessible_expected_documents": sorted(accessible_expected),
+            })
+
+        for principal in fixtures["unauthorized"]:
+            results = retriever.search(case["question"], top_k, allowed_roles=set(principal.roles))
+            ids = set(deduplicate_document_ids(results, top_k))
+            protected_expected = {
+                document_id
+                for document_id in case["expected_documents"]
+                if not principal.roles.intersection(acl_by_document.get(document_id, set()))
+            }
+            leaked = ids.intersection(protected_expected)
+            violations = [
+                result.chunk.document_id
+                for result in results
+                if not principal.roles.intersection(result.chunk.access_roles)
+            ]
+            unauthorized_trials += 1
+            unauthorized_leaks += int(bool(leaked))
+            filter_violations += len(violations)
+            trial_details.append({
+                "case_id": case["id"], "principal": principal.name, "kind": "unauthorized",
+                "roles": sorted(principal.roles), "protected_expected_documents": sorted(protected_expected),
+                "leaked_expected_documents": sorted(leaked),
+            })
+
+    return {
+        "scope": "retrieval filtering with synthetic principals; not authentication or secure RBAC",
+        "authorized_trials": authorized_trials,
+        "authorized_any_accessible_document_success_at_5": safe_divide(authorized_any, authorized_trials),
+        "authorized_full_accessible_evidence_success_at_5": safe_divide(authorized_full, authorized_trials),
+        "unauthorized_trials": unauthorized_trials,
+        "unauthorized_expected_document_leak_trials": unauthorized_leaks,
+        "unauthorized_expected_document_exclusion_rate": safe_divide(
+            unauthorized_trials - unauthorized_leaks, unauthorized_trials
+        ),
+        "role_filter_result_violations": filter_violations,
+        "unmapped_required_role_labels": sorted(unmapped_labels),
+        "trials": trial_details,
+    }
+
+
+def evaluate_benchmark(
+    cases: list[dict[str, Any]],
+    retriever: TfidfRetriever,
+    service: RagService,
+    top_k: int = DEFAULT_TOP_K,
+) -> dict[str, Any]:
+    results_by_case = {
+        case["id"]: retriever.search(case["question"], top_k=top_k) for case in cases
+    }
+    decisions_by_case = {
+        case["id"]: bool(service.ask(case["question"], top_k=top_k)["abstained"])
+        for case in cases
+    }
+    retrieval = calculate_retrieval_metrics(cases, results_by_case, top_k)
+    unanswerable = [case for case in cases if not case["answerable"]]
+    unanswerable_nonempty = sum(
+        bool(deduplicate_document_ids(results_by_case[case["id"]], top_k)) for case in unanswerable
+    )
+
+    return {
+        "benchmark_cases": len(cases),
+        "answerable_cases": retrieval["answerable_cases"],
+        "unanswerable_cases": len(unanswerable),
+        # Original keys are retained for before/after comparisons.
+        "recall_at_1": retrieval["recall_at_1"],
+        "recall_at_5": retrieval["recall_at_5"],
+        "mrr": retrieval["mrr"],
+        "unanswerable_retrieval_rate": safe_divide(unanswerable_nonempty, len(unanswerable)),
+        "retrieval": retrieval,
+        "temporal": calculate_temporal_metrics(cases, results_by_case, top_k),
+        "abstention": calculate_abstention_metrics(cases, decisions_by_case),
+        "authorization": evaluate_authorization(cases, retriever, top_k),
+        "per_category": calculate_per_category_metrics(cases, results_by_case, decisions_by_case, top_k),
+        "definitions": {
+            "document_ranking": "Ranked chunks are deduplicated by document ID before top-K metrics.",
+            "recall_at_k": "Fraction of answerable cases with any expected document in the first K distinct documents.",
+            "full_evidence_success_at_k": "Fraction of answerable cases with every expected document in the first K distinct documents.",
+            "mean_required_document_coverage_at_k": "Mean fraction of distinct expected documents found in the first K distinct documents.",
+            "abstention_positive_class": "A benchmark case marked answerable=false.",
+            "false_abstention_rate": "Answerable cases incorrectly abstained / all answerable cases.",
+            "missed_abstention_rate": "Unanswerable cases incorrectly answered / all unanswerable cases.",
+        },
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Evaluate an existing TF-IDF index")
+    parser.add_argument("--benchmark", type=Path, default=settings.benchmark_path)
+    parser.add_argument("--artifacts-dir", type=Path, default=settings.artifacts_dir)
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    index_path = args.artifacts_dir / "index.joblib"
+    retriever = TfidfRetriever.load(index_path)
+    service = RagService(index_path=index_path)
+    benchmark = json.loads(args.benchmark.read_text(encoding="utf-8"))
+    metrics = evaluate_benchmark(benchmark["cases"], retriever, service)
+    args.artifacts_dir.mkdir(parents=True, exist_ok=True)
+    (args.artifacts_dir / "retrieval_metrics.json").write_text(
+        json.dumps(metrics, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(metrics, indent=2))
+
+
+if __name__ == "__main__":
+    main()
