@@ -7,11 +7,11 @@ service=RagService()
 class AskRequest(BaseModel):
     question:str=Field(min_length=3)
     top_k:int=Field(default=settings.top_k,ge=1,le=10)
-    roles:list[str]=[]
+    roles:list[str]=Field(default_factory=list)
     department:str|None=None
 @app.get("/health")
 def health():
-    return {"status":"ok","documents":len({c.document_id for c in service.retriever.chunks}),"chunks":len(service.retriever.chunks)}
+    return {"status":"ok","retriever":service.retriever_type,"documents":len({c.document_id for c in service.retriever.chunks}),"chunks":len(service.retriever.chunks)}
 @app.post("/ask")
 def ask(req:AskRequest):
     return service.ask(req.question,req.top_k,set(req.roles) if req.roles else None,req.department)

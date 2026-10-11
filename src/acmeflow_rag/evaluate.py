@@ -9,13 +9,14 @@ from __future__ import annotations
 import json
 import re
 import argparse
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
 from .config import settings
-from .retrieval import TfidfRetriever
+from .retrieval import Retriever, load_retriever
 from .service import RagService
 
 
@@ -215,7 +216,7 @@ def calculate_per_category_metrics(
 
 
 def evaluate_authorization(
-    cases: list[dict[str, Any]], retriever: TfidfRetriever, top_k: int = DEFAULT_TOP_K
+    cases: list[dict[str, Any]], retriever: Retriever, top_k: int = DEFAULT_TOP_K
 ) -> dict[str, Any]:
     """Evaluate retrieval filters with declared role fixtures, not authentication or RBAC."""
 
@@ -292,13 +293,18 @@ def evaluate_authorization(
 
 def evaluate_benchmark(
     cases: list[dict[str, Any]],
-    retriever: TfidfRetriever,
+    retriever: Retriever,
     service: RagService,
     top_k: int = DEFAULT_TOP_K,
 ) -> dict[str, Any]:
-    results_by_case = {
-        case["id"]: retriever.search(case["question"], top_k=top_k) for case in cases
-    }
+    # One unmeasured query removes one-time lazy model initialization from per-query latency.
+    retriever.search("evaluation warmup", top_k=1)
+    results_by_case: dict[str, Iterable[Any]] = {}
+    latencies_ms: list[float] = []
+    for case in cases:
+        started = time.perf_counter()
+        results_by_case[case["id"]] = retriever.search(case["question"], top_k=top_k)
+        latencies_ms.append((time.perf_counter() - started) * 1000)
     decisions_by_case = {
         case["id"]: bool(service.ask(case["question"], top_k=top_k)["abstained"])
         for case in cases
@@ -309,7 +315,20 @@ def evaluate_benchmark(
         bool(deduplicate_document_ids(results_by_case[case["id"]], top_k)) for case in unanswerable
     )
 
+    ordered_latency = sorted(latencies_ms)
+    percentile = lambda fraction: ordered_latency[round((len(ordered_latency) - 1) * fraction)]
+    multi_document_cases = [case for case in cases if case["category"] == "multi_document"]
+    multi_document_results = {
+        case["id"]: results_by_case[case["id"]] for case in multi_document_cases
+    }
+    index_metadata = getattr(retriever, "index_metadata", None)
+    retriever_metadata = index_metadata or {
+        "retriever_type": "tfidf",
+        "index_type": "TfidfVectorizer with exact cosine similarity",
+    }
+
     return {
+        "retriever_metadata": retriever_metadata,
         "benchmark_cases": len(cases),
         "answerable_cases": retrieval["answerable_cases"],
         "unanswerable_cases": len(unanswerable),
@@ -319,6 +338,18 @@ def evaluate_benchmark(
         "mrr": retrieval["mrr"],
         "unanswerable_retrieval_rate": safe_divide(unanswerable_nonempty, len(unanswerable)),
         "retrieval": retrieval,
+        "multi_document_retrieval": calculate_retrieval_metrics(
+            multi_document_cases, multi_document_results, top_k
+        ),
+        "latency_ms": {
+            "scope": "warm-query retrieval only; excludes index loading, model loading, generation, and authorization trials",
+            "query_count": len(latencies_ms),
+            "mean": safe_divide(sum(latencies_ms), len(latencies_ms)),
+            "min": ordered_latency[0] if ordered_latency else 0.0,
+            "p50": percentile(0.50) if ordered_latency else 0.0,
+            "p95": percentile(0.95) if ordered_latency else 0.0,
+            "max": ordered_latency[-1] if ordered_latency else 0.0,
+        },
         "temporal": calculate_temporal_metrics(cases, results_by_case, top_k),
         "abstention": calculate_abstention_metrics(cases, decisions_by_case),
         "authorization": evaluate_authorization(cases, retriever, top_k),
@@ -339,14 +370,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate an existing TF-IDF index")
     parser.add_argument("--benchmark", type=Path, default=settings.benchmark_path)
     parser.add_argument("--artifacts-dir", type=Path, default=settings.artifacts_dir)
+    parser.add_argument("--retriever", choices=("tfidf", "dense"), default="tfidf")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    index_path = args.artifacts_dir / "index.joblib"
-    retriever = TfidfRetriever.load(index_path)
-    service = RagService(index_path=index_path)
+    retriever = load_retriever(args.retriever, args.artifacts_dir)
+    service = RagService(retriever=retriever, retriever_type=args.retriever)
     benchmark = json.loads(args.benchmark.read_text(encoding="utf-8"))
     metrics = evaluate_benchmark(benchmark["cases"], retriever, service)
     args.artifacts_dir.mkdir(parents=True, exist_ok=True)

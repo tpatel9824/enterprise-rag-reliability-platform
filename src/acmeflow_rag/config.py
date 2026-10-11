@@ -8,7 +8,11 @@ ROOT = Path(__file__).resolve().parents[2]
 class Settings:
     documents_dir: Path = ROOT / "data" / "documents"
     benchmark_path: Path = ROOT / "data" / "evaluation" / "benchmark.json"
-    artifacts_dir: Path = ROOT / "artifacts"
+    artifacts_dir: Path = Path(os.getenv("RAG_ARTIFACTS_DIR", str(ROOT / "artifacts")))
+    retriever_type: str = os.getenv("RETRIEVER_TYPE", "tfidf")
+    dense_model_name: str = os.getenv(
+        "DENSE_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2"
+    )
     top_k: int = int(os.getenv("TOP_K", "5"))
     abstain_threshold: float = float(os.getenv("ABSTAIN_THRESHOLD", "0.08"))
     use_gemini: bool = os.getenv("RAG_USE_GEMINI", "false").lower() == "true"
