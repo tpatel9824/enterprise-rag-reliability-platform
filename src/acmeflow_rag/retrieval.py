@@ -19,6 +19,7 @@ class Retriever(Protocol):
         top_k: int = 5,
         allowed_roles: set[str] | None = None,
         department: str | None = None,
+        eligible_document_ids: set[str] | None = None,
     ) -> list[RetrievalResult]: ...
 
 class TfidfRetriever:
@@ -30,7 +31,8 @@ class TfidfRetriever:
         if not chunks: raise ValueError("Cannot fit with zero chunks")
         self.chunks = chunks
         self.matrix = self.vectorizer.fit_transform([c.text for c in chunks])
-    def search(self, query: str, top_k=5, allowed_roles: set[str] | None=None, department: str|None=None):
+    def search(self, query: str, top_k=5, allowed_roles: set[str] | None=None, department: str|None=None,
+               eligible_document_ids: set[str] | None=None):
         if self.matrix is None: raise RuntimeError("Retriever has not been fitted")
         q = self.vectorizer.transform([query])
         scores = cosine_similarity(q, self.matrix).ravel()
@@ -40,6 +42,7 @@ class TfidfRetriever:
             c=self.chunks[int(idx)]
             if allowed_roles is not None and not allowed_roles.intersection(set(c.access_roles)): continue
             if department is not None and c.department != department: continue
+            if eligible_document_ids is not None and c.document_id not in eligible_document_ids: continue
             score=float(scores[idx])
             if score <= 0: continue
             out.append(RetrievalResult(c, score))
@@ -52,7 +55,8 @@ class TfidfRetriever:
     def load(cls, path: Path):
         p=joblib.load(path); obj=cls(); obj.vectorizer=p["vectorizer"]; obj.matrix=p["matrix"]
         obj.chunks=[Chunk(**{**x,"access_roles":tuple(x["access_roles"]),"tags":tuple(x["tags"]),
-                              "heading_path":tuple(x.get("heading_path", ()))}) for x in p["chunks"]]
+                              "heading_path":tuple(x.get("heading_path", ())),
+                              "supersedes":tuple(x.get("supersedes", ()))}) for x in p["chunks"]]
         return obj
 
 

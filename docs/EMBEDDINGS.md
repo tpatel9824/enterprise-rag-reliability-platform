@@ -73,7 +73,8 @@ score could be attributed to the wrong source or access policy.
 Phase 2 searches the complete exact index and applies role and department checks before a result
 can enter the returned top K. Searching more candidates is necessary because filtering only an
 unfiltered top K could return too few authorized results. This is still application-level
-filtering based on client-supplied roles, not authentication or production RBAC.
+filtering based on roles supplied internally to the retriever. Phase 5 derives those roles through
+an identity-provider abstraction, but its local provider is not production authentication or RBAC.
 
 ## Limitations
 

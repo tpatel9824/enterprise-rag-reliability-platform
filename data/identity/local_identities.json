@@ -1,0 +1,22 @@
+{
+  "warning": "Development-only static credentials. Do not use in production.",
+  "tokens": {
+    "dev-employee-token": {
+      "subject": "local-employee",
+      "roles": ["employee"]
+    },
+    "dev-support-token": {
+      "subject": "local-support-agent",
+      "roles": ["support", "employee"]
+    },
+    "dev-security-token": {
+      "subject": "local-security-engineer",
+      "roles": ["security", "engineering", "employee"]
+    },
+    "dev-acme-customer-token": {
+      "subject": "local-acme-account-manager",
+      "roles": ["support", "sales"],
+      "customer_id": "customer-acme"
+    }
+  }
+}

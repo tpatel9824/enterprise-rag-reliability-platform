@@ -1,0 +1,74 @@
+{
+  "benchmark_name": "AcmeFlow Lifecycle and Authorization Governance v3",
+  "version": "3.0",
+  "corpus": "data/documents_v3",
+  "case_count": 7,
+  "cases": [
+    {
+      "id": "GOV001",
+      "question": "What is the refund request window?",
+      "identity_token": "dev-employee-token",
+      "as_of": "2026-06-01",
+      "answerable": true,
+      "expected_documents": ["product_refund_policy_2026_v2"],
+      "forbidden_documents": ["product_refund_policy_2025_v2", "customer_acme_refund_terms_2026_v3"]
+    },
+    {
+      "id": "GOV002",
+      "question": "What was the refund request window on June 1, 2025?",
+      "identity_token": "dev-employee-token",
+      "as_of": "2025-06-01",
+      "answerable": true,
+      "expected_documents": ["product_refund_policy_2025_v2"],
+      "forbidden_documents": ["product_refund_policy_2026_v2", "customer_acme_refund_terms_2026_v3"]
+    },
+    {
+      "id": "GOV003",
+      "question": "What refund window applies to Customer Acme?",
+      "identity_token": "dev-acme-customer-token",
+      "as_of": "2026-06-01",
+      "answerable": true,
+      "expected_documents": ["customer_acme_refund_terms_2026_v3"],
+      "forbidden_documents": ["product_refund_policy_2025_v2", "product_refund_policy_2026_v2"]
+    },
+    {
+      "id": "GOV004",
+      "question": "What refund window applied to Customer Acme before its signed terms?",
+      "identity_token": "dev-acme-customer-token",
+      "as_of": "2026-02-01",
+      "answerable": true,
+      "expected_documents": ["product_refund_policy_2026_v2"],
+      "forbidden_documents": ["product_refund_policy_2025_v2", "customer_acme_refund_terms_2026_v3"]
+    },
+    {
+      "id": "GOV005",
+      "question": "What controls apply to emergency production access?",
+      "identity_token": "dev-employee-token",
+      "as_of": "2026-06-01",
+      "department": "Security",
+      "answerable": false,
+      "expected_documents": [],
+      "forbidden_documents": ["sec_access_control_2026_v2"]
+    },
+    {
+      "id": "GOV006",
+      "question": "What controls apply to emergency production access?",
+      "identity_token": "dev-security-token",
+      "as_of": "2026-06-01",
+      "department": "Security",
+      "answerable": true,
+      "expected_documents": ["sec_access_control_2026_v2"],
+      "forbidden_documents": []
+    },
+    {
+      "id": "GOV007",
+      "question": "What must Support verify before opening a refund request?",
+      "identity_token": "dev-support-token",
+      "as_of": "2026-06-01",
+      "department": "Customer Support",
+      "answerable": true,
+      "expected_documents": ["support_operations_2026_v2"],
+      "forbidden_documents": ["sec_access_control_2026_v2"]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .config import settings
+from .auth import Principal as AuthPrincipal
 from .pipeline import RetrievalPipelineConfig, load_pipeline, normalize_strategy
 from .retrieval import Retriever
 from .service import RagService
@@ -50,6 +51,11 @@ AUTHORIZATION_PRINCIPALS: dict[str, dict[str, tuple[Principal, ...]]] = {
         "unauthorized": (Principal("sales-user", frozenset({"sales"})),),
     },
 }
+
+EVALUATION_PRINCIPAL = AuthPrincipal(
+    "offline-evaluator",
+    frozenset({"employee", "support", "sales", "finance", "product", "manager", "executive", "security", "engineering", "it"}),
+)
 
 
 def safe_divide(numerator: int | float, denominator: int | float) -> float:
@@ -349,7 +355,8 @@ def evaluate_benchmark(
         results_by_case[case["id"]] = retriever.search(case["question"], top_k=top_k)
         latencies_ms.append((time.perf_counter() - started) * 1000)
     responses_by_case = {
-        case["id"]: service.ask(case["question"], top_k=top_k) for case in cases
+        case["id"]: service.ask(case["question"], top_k=top_k, principal=EVALUATION_PRINCIPAL)
+        for case in cases
     }
     decisions_by_case = {
         case_id: bool(response["abstained"])

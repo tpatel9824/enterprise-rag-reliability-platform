@@ -12,6 +12,14 @@ class Document:
     tags: tuple[str, ...]
     path: str
     text: str
+    effective_from: str = ""
+    effective_until: str | None = None
+    supersedes: tuple[str, ...] = ()
+    status: str = "active"
+    policy_family: str = ""
+    policy_scope: str = "standard"
+    applies_to_customer: str | None = None
+    signed: bool = False
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 @dataclass(frozen=True)
@@ -30,6 +38,14 @@ class Chunk:
     source_path: str = ""
     start_char: int = 0
     end_char: int = 0
+    effective_from: str = ""
+    effective_until: str | None = None
+    supersedes: tuple[str, ...] = ()
+    status: str = "active"
+    policy_family: str = ""
+    policy_scope: str = "standard"
+    applies_to_customer: str | None = None
+    signed: bool = False
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 @dataclass(frozen=True)

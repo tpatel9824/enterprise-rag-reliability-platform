@@ -1,4 +1,4 @@
-# Architecture — Phase 3
+# Architecture — Phase 5
 
 ```text
 AcmeFlow documents
@@ -10,6 +10,10 @@ AcmeFlow documents
  section-aware chunker
        |
        v
+ verified identity -> server-derived roles/customer scope
+       |
+ lifecycle + policy precedence eligibility
+       |
  authorization + department eligibility
        |
        +-----------------------+
@@ -55,8 +59,12 @@ answer came from retrieval or from generation/grounding.
 The selectable retrieval strategies are `lexical`, `dense`, `hybrid`, and `hybrid_rerank`.
 Authorization and department filters are passed into both component retrievers before candidates
 can enter fusion or reranking. The pipeline validates returned candidates again and fails closed
-if an underlying retriever violates those constraints. This is retrieval-time filtering, not
-authentication or secure RBAC; the current API accepts client-provided roles.
+if an underlying retriever violates those constraints. This is retrieval-time filtering and does
+not by itself establish secure RBAC.
+
+Phase 5 removes client-provided roles from the API. Its local static-token identity provider is a
+development adapter, not production authentication. All eligibility constraints are applied before
+candidate text can reach hybrid fusion, the cross-encoder, Gemini, citations, or audit events.
 
 Evidence assessment is deliberately separate from retrieval and generation. Each strategy has its
 own policy because TF-IDF similarity, embedding cosine similarity, RRF scores, and cross-encoder

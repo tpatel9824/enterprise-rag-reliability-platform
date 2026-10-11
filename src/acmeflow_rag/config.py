@@ -29,5 +29,8 @@ class Settings:
     top_k: int = int(os.getenv("TOP_K", "5"))
     use_gemini: bool = os.getenv("RAG_USE_GEMINI", "false").lower() == "true"
     gemini_model: str = os.getenv("GENAI_MODEL", "")
+    local_identities_path: Path = Path(
+        os.getenv("LOCAL_IDENTITIES_PATH", str(ROOT / "data" / "identity" / "local_identities.json"))
+    )
 
 settings = Settings()

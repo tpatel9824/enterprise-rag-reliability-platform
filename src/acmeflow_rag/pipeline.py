@@ -79,12 +79,15 @@ def _validate_result_constraints(
     results: Iterable[RetrievalResult],
     allowed_roles: set[str] | None,
     department: str | None,
+    eligible_document_ids: set[str] | None = None,
 ) -> None:
     for result in results:
         if allowed_roles is not None and not allowed_roles.intersection(result.chunk.access_roles):
             raise RuntimeError("Base retriever returned an unauthorized candidate")
         if department is not None and result.chunk.department != department:
             raise RuntimeError("Base retriever returned a candidate from a disallowed department")
+        if eligible_document_ids is not None and result.chunk.document_id not in eligible_document_ids:
+            raise RuntimeError("Base retriever returned a version-ineligible candidate")
 
 
 class HybridRetriever:
@@ -121,14 +124,15 @@ class HybridRetriever:
         top_k: int = 5,
         allowed_roles: set[str] | None = None,
         department: str | None = None,
+        eligible_document_ids: set[str] | None = None,
     ) -> list[RetrievalResult]:
         if top_k < 1:
             return []
         request_k = max(top_k, self.candidate_k)
-        lexical = self.lexical.search(query, request_k, allowed_roles, department)
-        dense = self.dense.search(query, request_k, allowed_roles, department)
-        _validate_result_constraints(lexical, allowed_roles, department)
-        _validate_result_constraints(dense, allowed_roles, department)
+        lexical = self.lexical.search(query, request_k, allowed_roles, department, eligible_document_ids)
+        dense = self.dense.search(query, request_k, allowed_roles, department, eligible_document_ids)
+        _validate_result_constraints(lexical, allowed_roles, department, eligible_document_ids)
+        _validate_result_constraints(dense, allowed_roles, department, eligible_document_ids)
         return reciprocal_rank_fusion((lexical, dense), self.rrf_constant)[:top_k]
 
 
@@ -197,11 +201,12 @@ class RerankedRetriever:
         top_k: int = 5,
         allowed_roles: set[str] | None = None,
         department: str | None = None,
+        eligible_document_ids: set[str] | None = None,
     ) -> list[RetrievalResult]:
         candidates = self.base.search(
-            query, max(top_k, self.candidate_k), allowed_roles, department
+            query, max(top_k, self.candidate_k), allowed_roles, department, eligible_document_ids
         )
-        _validate_result_constraints(candidates, allowed_roles, department)
+        _validate_result_constraints(candidates, allowed_roles, department, eligible_document_ids)
         return self.reranker.rerank(query, candidates, top_k)
 
 

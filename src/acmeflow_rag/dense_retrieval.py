@@ -63,6 +63,7 @@ def _chunk_from_dict(value: dict[str, Any]) -> Chunk:
         "access_roles": tuple(value["access_roles"]),
         "tags": tuple(value["tags"]),
         "heading_path": tuple(value.get("heading_path", ())),
+        "supersedes": tuple(value.get("supersedes", ())),
     })
 
 
@@ -143,6 +144,7 @@ class DenseRetriever:
         top_k: int = 5,
         allowed_roles: set[str] | None = None,
         department: str | None = None,
+        eligible_document_ids: set[str] | None = None,
     ) -> list[RetrievalResult]:
         if self.index is None or self.embedding_dimension is None:
             raise RuntimeError("Retriever has not been fitted or loaded")
@@ -166,6 +168,8 @@ class DenseRetriever:
             if allowed_roles is not None and not allowed_roles.intersection(chunk.access_roles):
                 continue
             if department is not None and chunk.department != department:
+                continue
+            if eligible_document_ids is not None and chunk.document_id not in eligible_document_ids:
                 continue
             output.append(RetrievalResult(chunk=chunk, score=float(score)))
             if len(output) >= top_k:

@@ -39,14 +39,16 @@ class StubRetriever:
         self.enforce_filters = enforce_filters
         self.calls = []
 
-    def search(self, query, top_k=5, allowed_roles=None, department=None):
-        self.calls.append((query, top_k, allowed_roles, department))
+    def search(self, query, top_k=5, allowed_roles=None, department=None, eligible_document_ids=None):
+        self.calls.append((query, top_k, allowed_roles, department, eligible_document_ids))
         output = []
         for item in self.ranking:
             if self.enforce_filters:
                 if allowed_roles is not None and not allowed_roles.intersection(item.chunk.access_roles):
                     continue
                 if department is not None and item.chunk.department != department:
+                    continue
+                if eligible_document_ids is not None and item.chunk.document_id not in eligible_document_ids:
                     continue
             output.append(item)
         return output[:top_k]
@@ -94,8 +96,8 @@ def test_hybrid_passes_filters_before_fusion_and_returns_only_authorized_candida
     )
 
     assert [item.chunk.chunk_id for item in found] == ["public::1"]
-    assert lexical.calls[0][2:] == ({"employee"}, "Product")
-    assert dense.calls[0][2:] == ({"employee"}, "Product")
+    assert lexical.calls[0][2:] == ({"employee"}, "Product", None)
+    assert dense.calls[0][2:] == ({"employee"}, "Product", None)
 
 
 def test_hybrid_rejects_a_base_retriever_that_leaks_unauthorized_candidates():

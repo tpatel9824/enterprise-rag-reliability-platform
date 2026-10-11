@@ -16,8 +16,9 @@ four strategies:
 Authorization roles and the optional department constraint are applied by each component before
 candidate selection. A second pipeline check rejects a component result that violates the request
 constraints. Unauthorized text therefore does not enter fusion or the reranker. This boundary is
-not secure authentication or RBAC: callers currently supply their own roles, and production must
-derive identity and entitlements from a trusted system.
+not secure authentication or RBAC. Phase 5 derives roles through an identity-provider interface;
+the included static local provider is development-only and production must integrate a trusted
+identity and entitlement system.
 
 ## Reciprocal rank fusion
 

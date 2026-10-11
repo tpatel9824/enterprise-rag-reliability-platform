@@ -131,6 +131,14 @@ def chunk_document(doc: Document, max_words: int = 90, overlap_words: int = 20) 
                 source_path=doc.path,
                 start_char=span.start,
                 end_char=span.end,
+                effective_from=doc.effective_from,
+                effective_until=doc.effective_until,
+                supersedes=doc.supersedes,
+                status=doc.status,
+                policy_family=doc.policy_family,
+                policy_scope=doc.policy_scope,
+                applies_to_customer=doc.applies_to_customer,
+                signed=doc.signed,
             ))
     return chunks
 

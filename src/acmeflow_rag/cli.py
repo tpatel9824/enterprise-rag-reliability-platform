@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
+from datetime import date
 
+from .auth import LocalIdentityProvider
 from .config import settings
 from .pipeline import RetrievalPipelineConfig, load_pipeline, normalize_strategy
 from .service import RagService
@@ -13,8 +15,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("question")
     parser.add_argument("--top-k", type=int, default=settings.top_k)
-    parser.add_argument("--role", action="append", default=[])
+    parser.add_argument("--identity-token", required=True,
+                        help="Development token resolved by the configured local identity provider")
     parser.add_argument("--department", default=None)
+    parser.add_argument("--as-of", type=date.fromisoformat, default=None,
+                        help="Policy effective date in YYYY-MM-DD format")
     parser.add_argument("--strategy", "--retriever", dest="strategy", choices=STRATEGIES,
                         default=settings.retrieval_strategy)
     parser.add_argument("--artifacts-dir", type=Path, default=None,
@@ -46,8 +51,11 @@ def main():
         config, lexical_artifacts_dir=lexical_dir, dense_artifacts_dir=dense_dir
     )
     service = RagService(retriever=retriever, retriever_type=strategy)
+    principal = LocalIdentityProvider.from_json(settings.local_identities_path).authenticate(
+        args.identity_token
+    )
     result = service.ask(
-        args.question, args.top_k, set(args.role) if args.role else None, args.department
+        args.question, args.top_k, principal, args.department, args.as_of
     )
     print("\nANSWER\n" + result["answer"])
     print("ANSWERABLE:", result["answerable"])

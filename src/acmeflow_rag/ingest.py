@@ -24,8 +24,9 @@ def ingest_corpus(
     corpus_version: str | None = None,
     dense_model: Any | None = None,
     faiss_module: Any | None = None,
+    require_lifecycle: bool = False,
 ) -> tuple[int, list]:
-    documents = load_corpus(corpus_path)
+    documents = load_corpus(corpus_path, require_lifecycle=require_lifecycle)
     chunks = chunk_corpus(documents, max_words=max_words, overlap_words=overlap_words)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     (artifacts_dir / "chunks.json").write_text(
@@ -66,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-name", default=settings.dense_model_name)
     parser.add_argument("--model-revision", default=None)
     parser.add_argument("--corpus-version", default=None)
+    parser.add_argument("--require-lifecycle", action="store_true")
     return parser
 
 
@@ -80,6 +82,7 @@ def main() -> None:
         model_name=args.model_name,
         model_revision=args.model_revision,
         corpus_version=args.corpus_version,
+        require_lifecycle=args.require_lifecycle,
     )
     lengths = [len(chunk.text.split()) for chunk in chunks]
     print(f"Retriever: {args.retriever}")

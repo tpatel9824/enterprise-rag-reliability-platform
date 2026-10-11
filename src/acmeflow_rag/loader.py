@@ -15,6 +15,8 @@ DOCUMENT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 REQUIRED_METADATA = {
     "document_id", "title", "department", "version", "effective_date", "access_roles", "tags"
 }
+LIFECYCLE_FIELDS = {"effective_from", "effective_until", "supersedes", "status", "policy_family"}
+VALID_STATUSES = {"draft", "active", "superseded", "retired"}
 
 
 class MetadataValidationError(ValueError):
@@ -53,7 +55,7 @@ def _legacy_metadata(text: str) -> tuple[dict[str, Any], str]:
     return metadata, body
 
 
-def _validate_metadata(metadata: dict[str, Any], path: Path) -> dict[str, Any]:
+def _validate_metadata(metadata: dict[str, Any], path: Path, require_lifecycle: bool = False) -> dict[str, Any]:
     missing = sorted(REQUIRED_METADATA - metadata.keys())
     if missing:
         raise MetadataValidationError(f"{path}: missing required metadata: {', '.join(missing)}")
@@ -78,14 +80,59 @@ def _validate_metadata(metadata: dict[str, Any], path: Path) -> dict[str, Any]:
             raise MetadataValidationError(f"{path}: {field} must be a non-empty list of strings")
         if len(value) != len(set(value)):
             raise MetadataValidationError(f"{path}: {field} must not contain duplicates")
+    lifecycle_present = bool(LIFECYCLE_FIELDS.intersection(metadata))
+    if require_lifecycle and not LIFECYCLE_FIELDS.issubset(metadata):
+        missing_lifecycle = sorted(LIFECYCLE_FIELDS - metadata.keys())
+        raise MetadataValidationError(
+            f"{path}: missing required lifecycle metadata: {', '.join(missing_lifecycle)}"
+        )
+    if lifecycle_present:
+        missing_lifecycle = sorted(LIFECYCLE_FIELDS - metadata.keys())
+        if missing_lifecycle:
+            raise MetadataValidationError(
+                f"{path}: partial lifecycle metadata; missing: {', '.join(missing_lifecycle)}"
+            )
+        for field in ("effective_from", "policy_family"):
+            if not isinstance(metadata[field], str) or not metadata[field].strip():
+                raise MetadataValidationError(f"{path}: {field} must be a non-empty string")
+        try:
+            effective_from = date.fromisoformat(metadata["effective_from"])
+            effective_until = (
+                date.fromisoformat(metadata["effective_until"])
+                if metadata["effective_until"] is not None else None
+            )
+        except (TypeError, ValueError) as exc:
+            raise MetadataValidationError(
+                f"{path}: lifecycle dates must be ISO dates or effective_until: null"
+            ) from exc
+        if effective_until is not None and effective_until < effective_from:
+            raise MetadataValidationError(f"{path}: effective_until precedes effective_from")
+        if metadata["status"] not in VALID_STATUSES:
+            raise MetadataValidationError(f"{path}: invalid status {metadata['status']!r}")
+        supersedes = metadata["supersedes"]
+        if not isinstance(supersedes, list) or not all(isinstance(item, str) for item in supersedes):
+            raise MetadataValidationError(f"{path}: supersedes must be a list of document IDs")
+        if len(supersedes) != len(set(supersedes)) or metadata["document_id"] in supersedes:
+            raise MetadataValidationError(f"{path}: supersedes contains duplicate or self references")
+        scope = metadata.get("policy_scope", "standard")
+        if scope not in {"standard", "customer"}:
+            raise MetadataValidationError(f"{path}: policy_scope must be standard or customer")
+        customer = metadata.get("applies_to_customer")
+        signed = metadata.get("signed", False)
+        if scope == "customer" and (not isinstance(customer, str) or not customer or signed is not True):
+            raise MetadataValidationError(
+                f"{path}: customer policy requires applies_to_customer and signed: true"
+            )
+        if scope == "standard" and customer is not None:
+            raise MetadataValidationError(f"{path}: standard policy cannot name a customer")
     return metadata
 
 
-def load_document(path: Path) -> Document:
+def load_document(path: Path, *, require_lifecycle: bool = False) -> Document:
     text = path.read_text(encoding="utf-8")
     parsed = _front_matter(text, path)
     metadata, body = parsed if parsed is not None else _legacy_metadata(text)
-    metadata = _validate_metadata(metadata, path)
+    metadata = _validate_metadata(metadata, path, require_lifecycle)
     if not body.strip():
         raise MetadataValidationError(f"{path}: document body must not be empty")
     return Document(
@@ -98,14 +145,22 @@ def load_document(path: Path) -> Document:
         tags=tuple(metadata["tags"]),
         path=str(path.resolve()),
         text=body,
+        effective_from=metadata.get("effective_from", metadata["effective_date"]),
+        effective_until=metadata.get("effective_until"),
+        supersedes=tuple(metadata.get("supersedes", [])),
+        status=metadata.get("status", "active"),
+        policy_family=metadata.get("policy_family", metadata["document_id"]),
+        policy_scope=metadata.get("policy_scope", "standard"),
+        applies_to_customer=metadata.get("applies_to_customer"),
+        signed=metadata.get("signed", False),
     )
 
 
-def load_corpus(documents_dir: Path) -> list[Document]:
+def load_corpus(documents_dir: Path, *, require_lifecycle: bool = False) -> list[Document]:
     paths = sorted(documents_dir.rglob("*.md"))
     if not paths:
         raise FileNotFoundError(f"No Markdown documents found under {documents_dir}")
-    documents = [load_document(path) for path in paths]
+    documents = [load_document(path, require_lifecycle=require_lifecycle) for path in paths]
     seen: set[str] = set()
     duplicates: set[str] = set()
     for document in documents:
@@ -116,4 +171,27 @@ def load_corpus(documents_dir: Path) -> list[Document]:
         raise MetadataValidationError(
             f"Duplicate document_id values: {', '.join(sorted(duplicates))}"
         )
+    by_id = {document.document_id: document for document in documents}
+    for document in documents:
+        for reference in document.supersedes:
+            target = by_id.get(reference)
+            if target is None:
+                raise MetadataValidationError(
+                    f"{document.path}: supersedes references unknown document {reference!r}"
+                )
+            if target.policy_family != document.policy_family:
+                raise MetadataValidationError(
+                    f"{document.path}: superseded document must share policy_family"
+                )
+            if date.fromisoformat(target.effective_from) >= date.fromisoformat(document.effective_from):
+                raise MetadataValidationError(
+                    f"{document.path}: superseded document must start before its replacement"
+                )
+    def visit(document_id: str, path: set[str]) -> None:
+        if document_id in path:
+            raise MetadataValidationError(f"Lifecycle supersedes cycle includes {document_id}")
+        for parent in by_id[document_id].supersedes:
+            visit(parent, path | {document_id})
+    for document_id in by_id:
+        visit(document_id, set())
     return documents

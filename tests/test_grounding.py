@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from acmeflow_rag.evidence import EvidenceAssessor, EvidencePolicy
+from acmeflow_rag.auth import Principal
 from acmeflow_rag.grounding import GeneratedAnswer, GroundedClaim, validate_citations
 from acmeflow_rag.models import Chunk, RetrievalResult
 from acmeflow_rag.service import RagService
@@ -30,11 +31,12 @@ class StaticRetriever:
         self.results = results
         self.chunks = [item.chunk for item in results]
 
-    def search(self, query, top_k=5, allowed_roles=None, department=None):
+    def search(self, query, top_k=5, allowed_roles=None, department=None, eligible_document_ids=None):
         return [
             item for item in self.results
             if (allowed_roles is None or set(item.chunk.access_roles) & allowed_roles)
             and (department is None or item.chunk.department.lower() == department.lower())
+            and (eligible_document_ids is None or item.chunk.document_id in eligible_document_ids)
         ][:top_k]
 
 
@@ -105,7 +107,7 @@ def test_service_returns_structured_claim_mapping_and_evidence():
         retriever=StaticRetriever([evidence]), retriever_type="lexical",
         assessor=permissive_assessor(), generator=StaticGenerator(generated),
     )
-    response = service.ask("Who approves production access?", 5, {"security"})
+    response = service.ask("Who approves production access?", 5, Principal("tester", frozenset({"security"})))
     assert response["answerable"] and not response["abstained"]
     assert response["reason_code"] == "ANSWER_GROUNDED"
     assert response["source_document_ids"] == ["doc-1"]
@@ -122,7 +124,7 @@ def test_service_rejects_generator_citation_outside_authorized_context():
         retriever=StaticRetriever([result()]), retriever_type="lexical",
         assessor=permissive_assessor(), generator=StaticGenerator(generated),
     )
-    response = service.ask("production access", 5, {"security"})
+    response = service.ask("production access", 5, Principal("tester", frozenset({"security"})))
     assert response["abstained"]
     assert response["reason_code"] == "INVALID_GENERATED_CITATIONS"
     assert response["claims"] == []
@@ -133,7 +135,7 @@ def test_service_handles_generator_failure_safely():
         retriever=StaticRetriever([result()]), retriever_type="lexical",
         assessor=permissive_assessor(), generator=StaticGenerator(error=RuntimeError("offline")),
     )
-    response = service.ask("production access", 5, {"security"})
+    response = service.ask("production access", 5, Principal("tester", frozenset({"security"})))
     assert response["abstained"]
     assert response["reason_code"] == "GENERATOR_FAILURE"
     assert "RuntimeError" in response["generation_error"]
@@ -145,5 +147,5 @@ def test_no_authorized_results_prevents_generation():
         retriever=StaticRetriever([result()]), retriever_type="lexical",
         assessor=permissive_assessor(), generator=generator,
     )
-    response = service.ask("production access", 5, {"sales"})
-    assert response["reason_code"] == "NO_RETRIEVAL_RESULTS"
+    response = service.ask("production access", 5, Principal("tester", frozenset({"sales"})))
+    assert response["reason_code"] == "ACCESS_DENIED"
