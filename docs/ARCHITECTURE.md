@@ -1,22 +1,32 @@
-# Architecture — Phase 1
+# Architecture — Phase 3
 
 ```text
 AcmeFlow documents
        |
        v
- document loader
+ validated document loader
        |
        v
  section-aware chunker
        |
        v
- TF-IDF vectorizer
+ authorization + department eligibility
        |
-       v
- cosine similarity
-       |
-       v
- top-k evidence
+       +-----------------------+
+       |                       |
+       v                       v
+ TF-IDF retrieval       MiniLM + FAISS retrieval
+       |                       |
+       +-----------+-----------+
+                   |
+                   v
+       optional reciprocal rank fusion
+                   |
+                   v
+       optional cross-encoder reranking
+                   |
+                   v
+             top-k evidence
        |
        +--> offline answer
        |
@@ -25,3 +35,9 @@ AcmeFlow documents
 
 Retrieval and generation are intentionally separate. This lets us determine whether a bad
 answer came from retrieval or from generation/grounding.
+
+The selectable retrieval strategies are `lexical`, `dense`, `hybrid`, and `hybrid_rerank`.
+Authorization and department filters are passed into both component retrievers before candidates
+can enter fusion or reranking. The pipeline validates returned candidates again and fails closed
+if an underlying retriever violates those constraints. This is retrieval-time filtering, not
+authentication or secure RBAC; the current API accepts client-provided roles.

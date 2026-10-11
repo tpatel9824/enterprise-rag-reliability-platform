@@ -16,7 +16,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .config import settings
-from .retrieval import Retriever, load_retriever
+from .pipeline import RetrievalPipelineConfig, load_pipeline, normalize_strategy
+from .retrieval import Retriever
 from .service import RagService
 
 
@@ -367,21 +368,50 @@ def evaluate_benchmark(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Evaluate an existing TF-IDF index")
+    parser = argparse.ArgumentParser(description="Evaluate a configured retrieval pipeline")
     parser.add_argument("--benchmark", type=Path, default=settings.benchmark_path)
-    parser.add_argument("--artifacts-dir", type=Path, default=settings.artifacts_dir)
-    parser.add_argument("--retriever", choices=("tfidf", "dense"), default="tfidf")
+    parser.add_argument("--strategy", "--retriever", dest="strategy",
+                        choices=("lexical", "tfidf", "dense", "hybrid", "hybrid_rerank"),
+                        default="lexical")
+    parser.add_argument("--artifacts-dir", type=Path, default=None,
+                        help="Backward-compatible component artifact directory")
+    parser.add_argument("--lexical-artifacts-dir", type=Path, default=settings.lexical_artifacts_dir)
+    parser.add_argument("--dense-artifacts-dir", type=Path, default=settings.dense_artifacts_dir)
+    parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument("--candidate-k", type=int, default=settings.retrieval_candidate_k)
+    parser.add_argument("--rrf-constant", type=int, default=settings.rrf_constant)
+    parser.add_argument("--reranker-model", default=settings.reranker_model)
+    parser.add_argument("--reranker-revision", default=settings.reranker_revision)
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    retriever = load_retriever(args.retriever, args.artifacts_dir)
-    service = RagService(retriever=retriever, retriever_type=args.retriever)
+    strategy = normalize_strategy(args.strategy)
+    lexical_dir = args.lexical_artifacts_dir
+    dense_dir = args.dense_artifacts_dir
+    if args.artifacts_dir is not None:
+        if strategy == "lexical":
+            lexical_dir = args.artifacts_dir
+        elif strategy == "dense":
+            dense_dir = args.artifacts_dir
+    config = RetrievalPipelineConfig(
+        strategy=strategy,
+        candidate_k=args.candidate_k,
+        rrf_constant=args.rrf_constant,
+        reranker_model=args.reranker_model,
+        reranker_revision=args.reranker_revision,
+    )
+    retriever = load_pipeline(
+        config, lexical_artifacts_dir=lexical_dir, dense_artifacts_dir=dense_dir
+    )
+    service = RagService(retriever=retriever, retriever_type=strategy)
     benchmark = json.loads(args.benchmark.read_text(encoding="utf-8"))
     metrics = evaluate_benchmark(benchmark["cases"], retriever, service)
-    args.artifacts_dir.mkdir(parents=True, exist_ok=True)
-    (args.artifacts_dir / "retrieval_metrics.json").write_text(
+    output_dir = args.output_dir or args.artifacts_dir or settings.artifacts_dir / "evaluation" / strategy
+    output_dir.mkdir(parents=True, exist_ok=True)
+    config.save(output_dir / "pipeline_config.json")
+    (output_dir / "retrieval_metrics.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"
     )
     print(json.dumps(metrics, indent=2))
