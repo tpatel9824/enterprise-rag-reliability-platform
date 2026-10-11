@@ -50,12 +50,17 @@ def main():
         args.question, args.top_k, set(args.role) if args.role else None, args.department
     )
     print("\nANSWER\n" + result["answer"])
+    print("ANSWERABLE:", result["answerable"])
     print("\nABSTAINED:", result["abstained"])
-    print("BEST SCORE:", result["best_score"])
+    print("REASON:", result["reason_code"])
     print("\nSOURCES")
     for index, item in enumerate(result["retrieval"], 1):
         chunk = item["chunk"]
         print(f'{index}. {chunk["document_id"]} | {chunk["section"]} | score={item["score"]:.4f}')
+    if result["claims"]:
+        print("\nCLAIMS")
+        for claim in result["claims"]:
+            print(f'{claim["claim_id"]}: {claim["text"]} -> {", ".join(claim["cited_chunk_ids"])}')
 
 
 if __name__ == "__main__":

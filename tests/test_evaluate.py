@@ -4,12 +4,14 @@ import pytest
 
 from acmeflow_rag.evaluate import (
     calculate_abstention_metrics,
+    calculate_grounding_metrics,
     calculate_per_category_metrics,
     calculate_retrieval_metrics,
     calculate_temporal_metrics,
     deduplicate_document_ids,
     evaluate_authorization,
     reciprocal_rank,
+    wilson_interval,
 )
 from acmeflow_rag.models import Chunk, RetrievalResult
 
@@ -93,6 +95,23 @@ def test_abstention_metrics_handle_empty_class_denominators():
     assert metrics["recall"] == 0.0
     assert metrics["f1"] == 0.0
     assert metrics["missed_abstention_rate"] == 0.0
+
+
+def test_grounding_metrics_separate_citation_structure_from_correctness():
+    cases = [{"id": "a"}, {"id": "b"}, {"id": "c"}]
+    responses = {
+        "a": {"abstained": False, "citation_validation": {"valid": True},
+              "claims": [{"cited_chunk_ids": ["x"]}]},
+        "b": {"abstained": False, "citation_validation": {"valid": False},
+              "claims": [{"cited_chunk_ids": []}]},
+        "c": {"abstained": True, "claims": []},
+    }
+    metrics = calculate_grounding_metrics(cases, responses)
+    assert metrics["citation_validity_rate"] == 0.5
+    assert metrics["claim_evidence_coverage"] == 0.5
+    assert "correctness" in metrics["scope"]
+    low, high = wilson_interval(1, 2)
+    assert low < 0.5 < high
 
 
 def test_temporal_metrics_separate_current_and_historical_questions():

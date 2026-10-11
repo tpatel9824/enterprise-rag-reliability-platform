@@ -6,7 +6,7 @@ from .pipeline import RetrievalPipelineConfig, load_pipeline, normalize_strategy
 from .service import RagService
 
 
-app = FastAPI(title="AcmeFlow Enterprise RAG", version="0.3.0")
+app = FastAPI(title="AcmeFlow Enterprise RAG", version="0.4.0")
 strategy = normalize_strategy(settings.retrieval_strategy)
 pipeline_config = RetrievalPipelineConfig(
     strategy=strategy,

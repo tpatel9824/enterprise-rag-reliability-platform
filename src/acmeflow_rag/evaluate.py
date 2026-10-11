@@ -10,6 +10,7 @@ import json
 import re
 import argparse
 import time
+import math
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -145,10 +146,51 @@ def calculate_abstention_metrics(
             "false_negative": fn,
         },
         "precision": precision,
+        "precision_wilson_95": wilson_interval(tp, tp + fp),
         "recall": recall,
+        "recall_wilson_95": wilson_interval(tp, tp + fn),
         "f1": safe_divide(2 * precision * recall, precision + recall),
         "false_abstention_rate": safe_divide(fp, fp + tn),
+        "false_abstention_rate_wilson_95": wilson_interval(fp, fp + tn),
         "missed_abstention_rate": safe_divide(fn, fn + tp),
+        "missed_abstention_rate_wilson_95": wilson_interval(fn, fn + tp),
+    }
+
+
+def wilson_interval(successes: int, total: int, z: float = 1.96) -> list[float]:
+    """Approximate 95% Wilson interval for a binomial proportion."""
+
+    if not total:
+        return [0.0, 0.0]
+    proportion = successes / total
+    denominator = 1 + z * z / total
+    centre = (proportion + z * z / (2 * total)) / denominator
+    half = z * math.sqrt(proportion * (1 - proportion) / total + z * z / (4 * total * total)) / denominator
+    return [max(0.0, centre - half), min(1.0, centre + half)]
+
+
+def calculate_grounding_metrics(
+    cases: list[dict[str, Any]], responses_by_case: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    """Measure citation structure only; this does not score correctness or entailment."""
+
+    answered = [responses_by_case[case["id"]] for case in cases if not responses_by_case[case["id"]]["abstained"]]
+    valid = sum(bool(response.get("citation_validation", {}).get("valid")) for response in answered)
+    total_claims = sum(len(response.get("claims", [])) for response in answered)
+    cited_claims = sum(
+        bool(claim.get("cited_chunk_ids"))
+        for response in answered
+        for claim in response.get("claims", [])
+    )
+    return {
+        "answered_responses": len(answered),
+        "responses_with_valid_citations": valid,
+        "citation_validity_rate": safe_divide(valid, len(answered)),
+        "citation_validity_wilson_95": wilson_interval(valid, len(answered)),
+        "factual_claims": total_claims,
+        "claims_with_evidence": cited_claims,
+        "claim_evidence_coverage": safe_divide(cited_claims, total_claims),
+        "scope": "Checks citation existence and authorized-context chunk IDs only; factual correctness and entailment are not measured.",
     }
 
 
@@ -306,9 +348,12 @@ def evaluate_benchmark(
         started = time.perf_counter()
         results_by_case[case["id"]] = retriever.search(case["question"], top_k=top_k)
         latencies_ms.append((time.perf_counter() - started) * 1000)
+    responses_by_case = {
+        case["id"]: service.ask(case["question"], top_k=top_k) for case in cases
+    }
     decisions_by_case = {
-        case["id"]: bool(service.ask(case["question"], top_k=top_k)["abstained"])
-        for case in cases
+        case_id: bool(response["abstained"])
+        for case_id, response in responses_by_case.items()
     }
     retrieval = calculate_retrieval_metrics(cases, results_by_case, top_k)
     unanswerable = [case for case in cases if not case["answerable"]]
@@ -353,6 +398,7 @@ def evaluate_benchmark(
         },
         "temporal": calculate_temporal_metrics(cases, results_by_case, top_k),
         "abstention": calculate_abstention_metrics(cases, decisions_by_case),
+        "grounding": calculate_grounding_metrics(cases, responses_by_case),
         "authorization": evaluate_authorization(cases, retriever, top_k),
         "per_category": calculate_per_category_metrics(cases, results_by_case, decisions_by_case, top_k),
         "definitions": {
@@ -363,6 +409,8 @@ def evaluate_benchmark(
             "abstention_positive_class": "A benchmark case marked answerable=false.",
             "false_abstention_rate": "Answerable cases incorrectly abstained / all answerable cases.",
             "missed_abstention_rate": "Unanswerable cases incorrectly answered / all unanswerable cases.",
+            "citation_validity": "Answered responses whose claims all cite chunk IDs present in their authorized retrieved context.",
+            "claim_evidence_coverage": "Claims containing at least one citation / all generated claims; not an entailment metric.",
         },
     }
 
@@ -370,6 +418,8 @@ def evaluate_benchmark(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate a configured retrieval pipeline")
     parser.add_argument("--benchmark", type=Path, default=settings.benchmark_path)
+    parser.add_argument("--calibration-set", type=Path, default=None,
+                        help="Optional labeled development set used to document policy calibration")
     parser.add_argument("--strategy", "--retriever", dest="strategy",
                         choices=("lexical", "tfidf", "dense", "hybrid", "hybrid_rerank"),
                         default="lexical")
@@ -408,6 +458,21 @@ def main() -> None:
     service = RagService(retriever=retriever, retriever_type=strategy)
     benchmark = json.loads(args.benchmark.read_text(encoding="utf-8"))
     metrics = evaluate_benchmark(benchmark["cases"], retriever, service)
+    if args.calibration_set:
+        calibration = json.loads(args.calibration_set.read_text(encoding="utf-8"))
+        evaluation_ids = {case["id"] for case in benchmark["cases"]}
+        calibration_ids = {case["id"] for case in calibration["cases"]}
+        overlap = sorted(evaluation_ids.intersection(calibration_ids))
+        if overlap:
+            raise ValueError(f"Calibration and evaluation case IDs overlap: {overlap}")
+        metrics["dataset_split"] = {
+            "calibration_path": str(args.calibration_set),
+            "calibration_cases": len(calibration["cases"]),
+            "held_out_evaluation_path": str(args.benchmark),
+            "held_out_evaluation_cases": len(benchmark["cases"]),
+            "overlapping_case_ids": overlap,
+            "policy_selection": "Evidence policy thresholds were chosen using the development calibration set, not held-out labels.",
+        }
     output_dir = args.output_dir or args.artifacts_dir or settings.artifacts_dir / "evaluation" / strategy
     output_dir.mkdir(parents=True, exist_ok=True)
     config.save(output_dir / "pipeline_config.json")

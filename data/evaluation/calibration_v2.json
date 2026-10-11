@@ -1,0 +1,65 @@
+{
+  "benchmark_name": "AcmeFlow RAG Evidence Policy Development Set",
+  "version": "1.0",
+  "purpose": "Development-only threshold calibration; excluded from held-out Phase 4 reporting",
+  "corpus": "data/documents_v2",
+  "case_count": 8,
+  "cases": [
+    {
+      "id": "CAL001",
+      "answerable": true,
+      "category": "direct_lookup",
+      "question": "After a refund is approved, when may cardholders see the credit?",
+      "expected_documents": ["product_refund_policy_2026_v2"]
+    },
+    {
+      "id": "CAL002",
+      "answerable": true,
+      "category": "direct_lookup",
+      "question": "Who must authorize ordinary production access?",
+      "expected_documents": ["sec_access_control_2026_v2"]
+    },
+    {
+      "id": "CAL003",
+      "answerable": true,
+      "category": "direct_lookup",
+      "question": "What is the weekly remote-work allowance?",
+      "expected_documents": ["hr_remote_work_2026_v2"]
+    },
+    {
+      "id": "CAL004",
+      "answerable": true,
+      "category": "multi_document",
+      "question": "What should Support and Security do when a customer reports stolen credentials during an outage?",
+      "expected_documents": ["support_operations_2026_v2", "sec_incident_standard_2026_v2"]
+    },
+    {
+      "id": "CAL005",
+      "answerable": false,
+      "category": "unanswerable",
+      "question": "What is AcmeFlow's dental insurance deductible?",
+      "expected_documents": []
+    },
+    {
+      "id": "CAL006",
+      "answerable": false,
+      "category": "unanswerable",
+      "question": "Which office cafeteria serves vegan breakfast?",
+      "expected_documents": []
+    },
+    {
+      "id": "CAL007",
+      "answerable": false,
+      "category": "unanswerable",
+      "question": "What company car model may executives order?",
+      "expected_documents": []
+    },
+    {
+      "id": "CAL008",
+      "answerable": false,
+      "category": "unanswerable",
+      "question": "How many free concert tickets does each employee receive?",
+      "expected_documents": []
+    }
+  ]
+}
