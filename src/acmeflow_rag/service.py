@@ -43,7 +43,12 @@ class RagService:
         validate_chunk_lifecycle(self.retriever.chunks)
         self.retriever_type = "lexical" if selected_type == "tfidf" else selected_type
         self.assessor = assessor or EvidenceAssessor()
-        self.generator = generator or build_generator(settings.use_gemini, settings.gemini_model)
+        self.generator = generator or build_generator(
+            settings.use_gemini,
+            settings.gemini_model,
+            settings.google_cloud_project,
+            settings.google_cloud_location,
+        )
         self.audit_sink = audit_sink or LoggingAuditSink()
 
     def _abstention_response(self, reason_code: str, results, assessment, error: str | None = None):

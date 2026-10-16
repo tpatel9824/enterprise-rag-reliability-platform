@@ -48,13 +48,22 @@ class OfflineGenerator:
 
 
 class GeminiGenerator:
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, project: str, location: str, client=None):
         from google import genai
         from google.genai.types import HttpOptions
 
         if not model_name:
             raise ValueError("GENAI_MODEL must be set when Gemini is enabled")
-        self.client = genai.Client(http_options=HttpOptions(api_version="v1"))
+        if not project or not location:
+            raise ValueError(
+                "GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION are required for Vertex AI"
+            )
+        self.client = client or genai.Client(
+            vertexai=True,
+            project=project,
+            location=location,
+            http_options=HttpOptions(api_version="v1"),
+        )
         self.model_name = model_name
 
     def generate(self, question: str, retrieved: list[RetrievalResult]) -> GeneratedAnswer:
@@ -88,5 +97,7 @@ class GeminiGenerator:
         return GeneratedAnswer(str(payload.get("answer", "")), claims)
 
 
-def build_generator(use_gemini: bool, model_name: str) -> GroundedGenerator:
-    return GeminiGenerator(model_name) if use_gemini else OfflineGenerator()
+def build_generator(
+    use_gemini: bool, model_name: str, project: str = "", location: str = "global"
+) -> GroundedGenerator:
+    return GeminiGenerator(model_name, project, location) if use_gemini else OfflineGenerator()

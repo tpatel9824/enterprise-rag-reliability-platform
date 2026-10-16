@@ -1,0 +1,68 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: acmeflow-rag
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "3"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      serviceAccountName: acmeflow-rag-runtime@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 4
+      timeoutSeconds: 120
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/acmeflow/acmeflow-rag:IMAGE_TAG
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          env:
+            - name: APP_ENV
+              value: production
+            - name: AUTH_MODE
+              value: oidc
+            - name: ARTIFACT_STORAGE_MODE
+              value: gcs
+            - name: RETRIEVAL_STRATEGY
+              value: hybrid
+            - name: GOOGLE_CLOUD_LOCATION
+              value: us-central1
+            - name: GOOGLE_CLOUD_PROJECT
+              value: PROJECT_ID
+            - name: GCS_ARTIFACT_BUCKET
+              value: ARTIFACT_BUCKET
+            - name: GCS_LEXICAL_PREFIX
+              value: indexes/v3/lexical
+            - name: GCS_DENSE_PREFIX
+              value: indexes/v3/dense
+            - name: OIDC_ISSUER
+              value: OIDC_ISSUER
+            - name: OIDC_AUDIENCE
+              value: OIDC_AUDIENCE
+            - name: OIDC_JWKS_URL
+              value: OIDC_JWKS_URL
+            - name: RAG_USE_GEMINI
+              value: "false"
+          startupProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 0
+            timeoutSeconds: 3
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            timeoutSeconds: 3
+            periodSeconds: 30
+            failureThreshold: 3

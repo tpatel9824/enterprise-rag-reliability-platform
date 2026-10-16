@@ -1,6 +1,6 @@
 [project]
 name = "acmeflow-enterprise-rag"
-version = "0.5.0"
+version = "0.6.0"
 description = "Evidence-grounded enterprise RAG reliability and governance platform"
 requires-python = ">=3.11"
 dependencies = [
@@ -17,7 +17,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "httpx>=0.27"]
+cloud = ["google-cloud-storage==3.17.0", "PyJWT[crypto]==2.10.1"]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "ruff==0.14.2"]
 
 [build-system]
 requires = ["setuptools>=68"]

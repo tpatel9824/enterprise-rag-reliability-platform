@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -29,7 +28,7 @@ class LoggingAuditSink:
         self.logger = logging.getLogger("acmeflow_rag.audit")
 
     def record(self, event: AuditEvent) -> None:
-        self.logger.info(json.dumps(asdict(event), sort_keys=True))
+        self.logger.info("audit_event", extra={"event_data": asdict(event)})
 
 
 class MemoryAuditSink:

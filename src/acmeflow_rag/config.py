@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @dataclass(frozen=True)
 class Settings:
+    app_environment: str = os.getenv("APP_ENV", "development")
     documents_dir: Path = ROOT / "data" / "documents"
     benchmark_path: Path = ROOT / "data" / "evaluation" / "benchmark.json"
     artifacts_dir: Path = Path(os.getenv("RAG_ARTIFACTS_DIR", str(ROOT / "artifacts")))
@@ -32,5 +33,19 @@ class Settings:
     local_identities_path: Path = Path(
         os.getenv("LOCAL_IDENTITIES_PATH", str(ROOT / "data" / "identity" / "local_identities.json"))
     )
+    auth_mode: str = os.getenv("AUTH_MODE", "local")
+    oidc_issuer: str = os.getenv("OIDC_ISSUER", "")
+    oidc_audience: str = os.getenv("OIDC_AUDIENCE", "")
+    oidc_jwks_url: str = os.getenv("OIDC_JWKS_URL", "")
+    oidc_roles_claim: str = os.getenv("OIDC_ROLES_CLAIM", "roles")
+    oidc_customer_claim: str = os.getenv("OIDC_CUSTOMER_CLAIM", "customer_id")
+    artifact_storage_mode: str = os.getenv("ARTIFACT_STORAGE_MODE", "local")
+    gcs_artifact_bucket: str = os.getenv("GCS_ARTIFACT_BUCKET", "")
+    gcs_lexical_prefix: str = os.getenv("GCS_LEXICAL_PREFIX", "indexes/lexical")
+    gcs_dense_prefix: str = os.getenv("GCS_DENSE_PREFIX", "indexes/dense")
+    artifact_cache_dir: Path = Path(os.getenv("ARTIFACT_CACHE_DIR", "/tmp/acmeflow-artifacts"))
+    google_cloud_project: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+    google_cloud_location: str = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+    log_level: str = os.getenv("LOG_LEVEL", "INFO")
 
 settings = Settings()

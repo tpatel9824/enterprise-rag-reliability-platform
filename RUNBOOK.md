@@ -1,6 +1,6 @@
 # Runbook
 
-1. `pip install -e ".[dev]"`
+1. `pip install -e ".[dev,cloud]"`
 2. `python -m acmeflow_rag.ingest`
 3. `python -m acmeflow_rag.cli "How long does a card refund take?"`
 4. `python -m acmeflow_rag.cli "What is AcmeFlow's cryptocurrency refund policy?"`

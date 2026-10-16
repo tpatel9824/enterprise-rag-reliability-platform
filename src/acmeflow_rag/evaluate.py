@@ -369,7 +369,8 @@ def evaluate_benchmark(
     )
 
     ordered_latency = sorted(latencies_ms)
-    percentile = lambda fraction: ordered_latency[round((len(ordered_latency) - 1) * fraction)]
+    def percentile(fraction):
+        return ordered_latency[round((len(ordered_latency) - 1) * fraction)]
     multi_document_cases = [case for case in cases if case["category"] == "multi_document"]
     multi_document_results = {
         case["id"]: results_by_case[case["id"]] for case in multi_document_cases

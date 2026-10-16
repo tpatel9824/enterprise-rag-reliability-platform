@@ -43,7 +43,8 @@ def evaluate_governance(cases, service, identity_provider, top_k=5):
             "forbidden_leaks": sorted(returned.intersection(forbidden)),
         })
     ordered = sorted(latencies)
-    percentile = lambda fraction: ordered[round((len(ordered) - 1) * fraction)]
+    def percentile(fraction):
+        return ordered[round((len(ordered) - 1) * fraction)]
     answerable_count = sum(case["answerable"] for case in cases)
     return {
         "case_count": len(cases),

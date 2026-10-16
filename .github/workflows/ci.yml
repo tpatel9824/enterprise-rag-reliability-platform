@@ -1,13 +1,61 @@
 name: ci
-on: [push, pull_request]
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.11"}
-      - run: pip install -e ".[dev]"
-      - run: python -m acmeflow_rag.ingest
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --requirement requirements.lock
+      - run: python -m pip install --no-deps -e .
+      - run: python -m pip install ruff==0.14.2 pytest==9.1.1
+      - run: ruff check src tests
       - run: pytest
-      - run: python -m acmeflow_rag.evaluate
+      - run: python -m pip check
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: docker build --tag acmeflow-rag:ci .
+      - name: Container smoke test with mounted local fixtures
+        run: |
+          mkdir -p .docker-smoke-artifacts
+          docker run --rm \
+            -v "$PWD/data:/app/data:ro" \
+            -v "$PWD/.docker-smoke-artifacts:/app/artifacts" \
+            acmeflow-rag:ci python -m acmeflow_rag.ingest \
+            --retriever tfidf --corpus data/documents_v3 --artifacts-dir artifacts \
+            --max-words 40 --overlap-words 10 --corpus-version v3 --require-lifecycle
+          docker run --rm -d --name acmeflow-rag-smoke -p 8080:8080 \
+            -v "$PWD/data/identity:/app/data/identity:ro" \
+            -v "$PWD/.docker-smoke-artifacts:/app/artifacts:ro" \
+            acmeflow-rag:ci
+          trap 'docker rm -f acmeflow-rag-smoke || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/ready; then exit 0; fi
+            sleep 2
+          done
+          docker logs acmeflow-rag-smoke
+          exit 1
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

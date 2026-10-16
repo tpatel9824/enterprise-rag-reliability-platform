@@ -1,7 +1,5 @@
 from dataclasses import replace
 
-import pytest
-
 from acmeflow_rag.evaluate import (
     calculate_abstention_metrics,
     calculate_grounding_metrics,

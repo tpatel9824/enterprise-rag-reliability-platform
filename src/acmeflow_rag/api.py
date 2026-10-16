@@ -3,13 +3,18 @@ from datetime import date
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
-from .auth import AuthenticationError, LocalIdentityProvider
+from .artifact_store import GCSArtifactStore, LocalArtifactStore
+from .auth import AuthenticationError, build_identity_provider
 from .config import settings
+from .observability import RequestMetricsMiddleware, ServiceMetrics, configure_logging
 from .pipeline import RetrievalPipelineConfig, load_pipeline, normalize_strategy
 from .service import RagService
 
 
-app = FastAPI(title="AcmeFlow Enterprise RAG", version="0.5.0")
+configure_logging(settings.log_level)
+app = FastAPI(title="AcmeFlow Enterprise RAG", version="0.6.0")
+metrics = ServiceMetrics()
+app.add_middleware(RequestMetricsMiddleware, metrics=metrics)
 strategy = normalize_strategy(settings.retrieval_strategy)
 pipeline_config = RetrievalPipelineConfig(
     strategy=strategy,
@@ -18,13 +23,36 @@ pipeline_config = RetrievalPipelineConfig(
     reranker_model=settings.reranker_model,
     reranker_revision=settings.reranker_revision,
 )
+if settings.artifact_storage_mode == "local":
+    lexical_dir = settings.lexical_artifacts_dir
+    dense_dir = settings.dense_artifacts_dir
+    if strategy in {"lexical", "hybrid", "hybrid_rerank"}:
+        lexical_dir = LocalArtifactStore(lexical_dir).materialize("tfidf")
+    if strategy in {"dense", "hybrid", "hybrid_rerank"}:
+        dense_dir = LocalArtifactStore(dense_dir).materialize("dense")
+elif settings.artifact_storage_mode == "gcs":
+    lexical_dir = settings.artifact_cache_dir / "tfidf"
+    dense_dir = settings.artifact_cache_dir / "dense"
+    if strategy in {"lexical", "hybrid", "hybrid_rerank"}:
+        lexical_dir = GCSArtifactStore(
+            settings.gcs_artifact_bucket, settings.gcs_lexical_prefix,
+            settings.artifact_cache_dir,
+        ).materialize("tfidf")
+    if strategy in {"dense", "hybrid", "hybrid_rerank"}:
+        dense_dir = GCSArtifactStore(
+            settings.gcs_artifact_bucket, settings.gcs_dense_prefix,
+            settings.artifact_cache_dir,
+        ).materialize("dense")
+else:
+    raise ValueError(f"Unsupported ARTIFACT_STORAGE_MODE: {settings.artifact_storage_mode!r}")
+
 retriever = load_pipeline(
     pipeline_config,
-    lexical_artifacts_dir=settings.lexical_artifacts_dir,
-    dense_artifacts_dir=settings.dense_artifacts_dir,
+    lexical_artifacts_dir=lexical_dir,
+    dense_artifacts_dir=dense_dir,
 )
 service = RagService(retriever=retriever, retriever_type=strategy)
-identity_provider = LocalIdentityProvider.from_json(settings.local_identities_path)
+identity_provider = build_identity_provider(settings)
 
 
 class AskRequest(BaseModel):
@@ -37,12 +65,23 @@ class AskRequest(BaseModel):
 
 @app.get("/health")
 def health():
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+def readiness():
     return {
-        "status": "ok",
+        "status": "ready",
         "retriever": service.retriever_type,
         "documents": len({chunk.document_id for chunk in service.retriever.chunks}),
         "chunks": len(service.retriever.chunks),
+        "artifact_storage": settings.artifact_storage_mode,
     }
+
+
+@app.get("/metrics")
+def operational_metrics():
+    return metrics.snapshot()
 
 
 @app.post("/ask")

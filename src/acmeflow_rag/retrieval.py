@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import Protocol, runtime_checkable
+
 import joblib
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
 from .models import Chunk, RetrievalResult
 
 
@@ -22,41 +24,82 @@ class Retriever(Protocol):
         eligible_document_ids: set[str] | None = None,
     ) -> list[RetrievalResult]: ...
 
+
 class TfidfRetriever:
     def __init__(self):
-        self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 2), min_df=1, max_df=0.98, sublinear_tf=True)
+        self.vectorizer = TfidfVectorizer(
+            lowercase=True,
+            ngram_range=(1, 2),
+            min_df=1,
+            max_df=0.98,
+            sublinear_tf=True,
+        )
         self.matrix = None
         self.chunks: list[Chunk] = []
+
     def fit(self, chunks: list[Chunk]):
-        if not chunks: raise ValueError("Cannot fit with zero chunks")
+        if not chunks:
+            raise ValueError("Cannot fit with zero chunks")
         self.chunks = chunks
-        self.matrix = self.vectorizer.fit_transform([c.text for c in chunks])
-    def search(self, query: str, top_k=5, allowed_roles: set[str] | None=None, department: str|None=None,
-               eligible_document_ids: set[str] | None=None):
-        if self.matrix is None: raise RuntimeError("Retriever has not been fitted")
-        q = self.vectorizer.transform([query])
-        scores = cosine_similarity(q, self.matrix).ravel()
+        self.matrix = self.vectorizer.fit_transform([chunk.text for chunk in chunks])
+
+    def search(
+        self,
+        query: str,
+        top_k=5,
+        allowed_roles: set[str] | None = None,
+        department: str | None = None,
+        eligible_document_ids: set[str] | None = None,
+    ):
+        if self.matrix is None:
+            raise RuntimeError("Retriever has not been fitted")
+        query_vector = self.vectorizer.transform([query])
+        scores = cosine_similarity(query_vector, self.matrix).ravel()
         order = np.argsort(scores)[::-1]
-        out=[]
-        for idx in order:
-            c=self.chunks[int(idx)]
-            if allowed_roles is not None and not allowed_roles.intersection(set(c.access_roles)): continue
-            if department is not None and c.department != department: continue
-            if eligible_document_ids is not None and c.document_id not in eligible_document_ids: continue
-            score=float(scores[idx])
-            if score <= 0: continue
-            out.append(RetrievalResult(c, score))
-            if len(out)>=top_k: break
-        return out
+        output = []
+        for index in order:
+            chunk = self.chunks[int(index)]
+            if allowed_roles is not None and not allowed_roles.intersection(chunk.access_roles):
+                continue
+            if department is not None and chunk.department != department:
+                continue
+            if eligible_document_ids is not None and chunk.document_id not in eligible_document_ids:
+                continue
+            score = float(scores[index])
+            if score <= 0:
+                continue
+            output.append(RetrievalResult(chunk, score))
+            if len(output) >= top_k:
+                break
+        return output
+
     def save(self, path: Path):
         path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump({"vectorizer":self.vectorizer,"matrix":self.matrix,"chunks":[c.to_dict() for c in self.chunks]}, path)
+        joblib.dump(
+            {
+                "vectorizer": self.vectorizer,
+                "matrix": self.matrix,
+                "chunks": [chunk.to_dict() for chunk in self.chunks],
+            },
+            path,
+        )
+
     @classmethod
     def load(cls, path: Path):
-        p=joblib.load(path); obj=cls(); obj.vectorizer=p["vectorizer"]; obj.matrix=p["matrix"]
-        obj.chunks=[Chunk(**{**x,"access_roles":tuple(x["access_roles"]),"tags":tuple(x["tags"]),
-                              "heading_path":tuple(x.get("heading_path", ())),
-                              "supersedes":tuple(x.get("supersedes", ()))}) for x in p["chunks"]]
+        payload = joblib.load(path)
+        obj = cls()
+        obj.vectorizer = payload["vectorizer"]
+        obj.matrix = payload["matrix"]
+        obj.chunks = [
+            Chunk(**{
+                **value,
+                "access_roles": tuple(value["access_roles"]),
+                "tags": tuple(value["tags"]),
+                "heading_path": tuple(value.get("heading_path", ())),
+                "supersedes": tuple(value.get("supersedes", ())),
+            })
+            for value in payload["chunks"]
+        ]
         return obj
 
 

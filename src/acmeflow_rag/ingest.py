@@ -10,6 +10,7 @@ from .config import settings
 from .dense_retrieval import DEFAULT_MODEL_NAME
 from .loader import load_corpus
 from .retrieval import TfidfRetriever
+from .artifact_store import create_artifact_manifest
 
 
 def ingest_corpus(
@@ -54,6 +55,12 @@ def ingest_corpus(
         retriever.save(artifacts_dir)
     else:
         raise ValueError(f"Unknown retriever type: {retriever_type!r}")
+    create_artifact_manifest(
+        artifacts_dir,
+        artifact_type=retriever_type,
+        corpus_version=corpus_version or corpus_path.name,
+        chunk_count=len(chunks),
+    )
     return len(documents), chunks
 
 

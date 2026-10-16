@@ -1,0 +1,46 @@
+name: gated-cloud-run-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Immutable image tag, normally a tested Git SHA
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+      - run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+      - name: Build and push immutable image
+        env:
+          IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/acmeflow/acmeflow-rag:${{ inputs.image_tag }}
+        run: |
+          docker build --tag "$IMAGE" .
+          docker push "$IMAGE"
+      - name: Deploy private revision
+        env:
+          IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/acmeflow/acmeflow-rag:${{ inputs.image_tag }}
+        run: |
+          gcloud run deploy acmeflow-rag \
+            --image "$IMAGE" \
+            --region "${{ vars.GCP_REGION }}" \
+            --service-account "${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}" \
+            --no-allow-unauthenticated \
+            --ingress internal-and-cloud-load-balancing \
+            --min 0 --max 3 --concurrency 4 --cpu 2 --memory 4Gi \
+            --set-env-vars APP_ENV=production,AUTH_MODE=oidc,ARTIFACT_STORAGE_MODE=gcs,RAG_USE_GEMINI=false,GOOGLE_CLOUD_PROJECT=${{ vars.GCP_PROJECT_ID }},GOOGLE_CLOUD_LOCATION=${{ vars.GCP_REGION }},GCS_ARTIFACT_BUCKET=${{ vars.GCS_ARTIFACT_BUCKET }},GCS_LEXICAL_PREFIX=${{ vars.GCS_LEXICAL_PREFIX }},GCS_DENSE_PREFIX=${{ vars.GCS_DENSE_PREFIX }},OIDC_ISSUER=${{ vars.OIDC_ISSUER }},OIDC_AUDIENCE=${{ vars.OIDC_AUDIENCE }},OIDC_JWKS_URL=${{ vars.OIDC_JWKS_URL }}
