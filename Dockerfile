@@ -3,6 +3,10 @@ FROM python:3.12.12-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    RAG_ARTIFACTS_DIR=/app/artifacts \
+    LEXICAL_ARTIFACTS_DIR=/app/artifacts \
+    DENSE_ARTIFACTS_DIR=/app/artifacts \
+    LOCAL_IDENTITIES_PATH=/app/data/identity/local_identities.json \
     PORT=8080
 
 WORKDIR /app
