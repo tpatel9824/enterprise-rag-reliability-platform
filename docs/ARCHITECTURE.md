@@ -71,3 +71,20 @@ own policy because TF-IDF similarity, embedding cosine similarity, RRF scores, a
 logits have different meanings and scales. The policies consume relevance signals, not calibrated
 probabilities. Only evidence that survived retrieval authorization filters can be supplied to a
 generator or accepted by citation validation.
+
+## Phase 7 evaluation boundary
+
+The offline quality runner sends identical held-out cases through each selectable retrieval
+pipeline and the real service boundary, including identity resolution, lifecycle selection,
+authorization, evidence assessment, generation, and citation validation. It records retrieval-only
+latency separately from end-to-end local service latency.
+
+Three answer properties remain intentionally distinct:
+
+1. citation validity checks that every cited chunk ID exists in authorized retrieved context;
+2. extractive claim support checks that a generated claim occurs in its cited passage; and
+3. expected-fact coverage checks explicit reference tokens in the final answer.
+
+None is a semantic factuality guarantee. Human review provenance belongs to the benchmark rather
+than the retrieval code, and the current Phase 7 benchmark truthfully records independent review
+as pending.

@@ -1,0 +1,112 @@
+{
+  "name": "AcmeFlow Phase 7 held-out quality benchmark",
+  "corpus": "documents_v3",
+  "created_at": "2026-10-18",
+  "review_provenance": {
+    "authoring_status": "project-authored from traceable corpus passages",
+    "independent_review_status": "pending",
+    "independent_reviewer": null,
+    "reviewed_at": null,
+    "warning": "These labels have not been independently reviewed and must not be presented as such."
+  },
+  "evaluation_contract": {
+    "generator": "offline deterministic extractive",
+    "top_k": 5,
+    "threshold_tuning": "No Phase 7 thresholds are selected from this held-out set.",
+    "reference_judgments": "Expected documents, answerability, forbidden documents, and facts are project-authored manual labels.",
+    "automated_scoring": "Expected-fact scoring uses explicit token sets; claim support uses extractive substring matching."
+  },
+  "cases": [
+    {
+      "id": "q7-current-refund-window", "category": "current_policy", "question": "What is the standard refund request window in June 2026?", "answerable": true,
+      "identity_token": "dev-support-token", "as_of": "2026-06-15", "expected_documents": ["product_refund_policy_2026_v2"], "forbidden_documents": ["product_refund_policy_2025_v2"],
+      "expected_facts": [{"id": "window", "description": "Standard window is 14 calendar days.", "acceptable_token_sets": [["14", "calendar", "days"]], "evidence_document": "product_refund_policy_2026_v2"}]
+    },
+    {
+      "id": "q7-historical-refund", "category": "historical_policy", "question": "As of June 2025, how long did a customer have to request a refund?", "answerable": true,
+      "identity_token": "dev-support-token", "as_of": "2025-06-15", "expected_documents": ["product_refund_policy_2025_v2"], "forbidden_documents": ["product_refund_policy_2026_v2"],
+      "expected_facts": [{"id": "old-window", "description": "Historical window was 30 calendar days.", "acceptable_token_sets": [["30", "calendar", "days"]], "evidence_document": "product_refund_policy_2025_v2"}]
+    },
+    {
+      "id": "q7-acme-precedence", "category": "customer_precedence", "question": "For Acme in June 2026, what refund window and initiation time apply?", "answerable": true,
+      "identity_token": "dev-acme-customer-token", "as_of": "2026-06-15", "expected_documents": ["customer_acme_refund_terms_2026_v3"], "forbidden_documents": ["product_refund_policy_2026_v2"],
+      "expected_facts": [
+        {"id": "acme-window", "description": "Acme window is 21 calendar days.", "acceptable_token_sets": [["21", "calendar", "days"]], "evidence_document": "customer_acme_refund_terms_2026_v3"},
+        {"id": "acme-initiation", "description": "Approved Acme refunds are initiated within 2 business days.", "acceptable_token_sets": [["2", "business", "days"]], "evidence_document": "customer_acme_refund_terms_2026_v3"}
+      ]
+    },
+    {
+      "id": "q7-cancellation-and-refund", "category": "multi_document", "question": "Does cancellation automatically refund the last charge, and what must Support verify for a refund request?", "answerable": true,
+      "identity_token": "dev-support-token", "as_of": "2026-06-15", "expected_documents": ["product_subscription_policy_2026_v2", "support_operations_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [
+        {"id": "no-auto-refund", "description": "Cancellation does not automatically refund the latest charge.", "acceptable_token_sets": [["cancellation", "does", "not", "automatically", "refund"]], "evidence_document": "product_subscription_policy_2026_v2"},
+        {"id": "verify-contract", "description": "Support verifies the applicable contract.", "acceptable_token_sets": [["verify", "applicable", "contract"]], "evidence_document": "support_operations_2026_v2"}
+      ]
+    },
+    {
+      "id": "q7-incident-coordination", "category": "multi_document", "question": "During a credential compromise, who coordinates response and what evidence must be preserved?", "answerable": true,
+      "identity_token": "dev-security-token", "as_of": "2026-06-15", "expected_documents": ["eng_incident_response_2026_v2", "sec_incident_standard_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [
+        {"id": "commander", "description": "An incident commander coordinates the response.", "acceptable_token_sets": [["incident", "commander", "coordinates"]], "evidence_document": "eng_incident_response_2026_v2"},
+        {"id": "preserve-logs", "description": "Responders preserve logs and alerts.", "acceptable_token_sets": [["preserve", "logs", "alerts"]], "evidence_document": "sec_incident_standard_2026_v2"}
+      ]
+    },
+    {
+      "id": "q7-remote-production", "category": "multi_document", "question": "What approvals and device conditions apply when a remote employee needs production access?", "answerable": true,
+      "identity_token": "dev-security-token", "as_of": "2026-06-15", "expected_documents": ["hr_remote_work_2026_v2", "sec_access_control_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [
+        {"id": "managed-device", "description": "Remote work requires a managed device.", "acceptable_token_sets": [["managed", "device"]], "evidence_document": "hr_remote_work_2026_v2"},
+        {"id": "access-approvals", "description": "Production access needs manager and system-owner approval.", "acceptable_token_sets": [["manager", "system", "owner"]], "evidence_document": "sec_access_control_2026_v2"}
+      ]
+    },
+    {
+      "id": "q7-travel-preapproval", "category": "hr", "question": "When is travel preapproval required, including the flight threshold?", "answerable": true,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "expected_documents": ["hr_expense_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [
+        {"id": "trip-threshold", "description": "Trips over $2,000 require preapproval.", "acceptable_token_sets": [["2", "000", "pre", "approval"]], "evidence_document": "hr_expense_2026_v2"},
+        {"id": "flight-threshold", "description": "Flights over $1,200 require preapproval.", "acceptable_token_sets": [["1", "200", "pre", "approval"]], "evidence_document": "hr_expense_2026_v2"}
+      ]
+    },
+    {
+      "id": "q7-expense-deadline", "category": "hr", "question": "How soon must an employee submit an expense report?", "answerable": true,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "expected_documents": ["hr_expense_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [{"id": "submission", "description": "Submit within 30 days.", "acceptable_token_sets": [["30", "days"]], "evidence_document": "hr_expense_2026_v2"}]
+    },
+    {
+      "id": "q7-security-authorized", "category": "authorization", "question": "What approvals are required for production access?", "answerable": true,
+      "identity_token": "dev-security-token", "as_of": "2026-06-15", "department": "Security", "expected_documents": ["sec_access_control_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [{"id": "approvals", "description": "Manager and system-owner approvals are required.", "acceptable_token_sets": [["manager", "system", "owner"]], "evidence_document": "sec_access_control_2026_v2"}]
+    },
+    {
+      "id": "q7-security-denied", "category": "authorization_denial", "question": "What approvals are required for production access?", "answerable": false,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "department": "Security", "expected_documents": [], "forbidden_documents": ["sec_access_control_2026_v2"], "expected_facts": []
+    },
+    {
+      "id": "q7-support-intake", "category": "support", "question": "What information must Support verify before assessing a refund?", "answerable": true,
+      "identity_token": "dev-support-token", "as_of": "2026-06-15", "expected_documents": ["support_operations_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [{"id": "intake", "description": "Verify requester, account, charge, contract, and reason.", "acceptable_token_sets": [["requester", "account", "charge", "contract", "reason"]], "evidence_document": "support_operations_2026_v2"}]
+    },
+    {
+      "id": "q7-emergency-change", "category": "engineering", "question": "What records and follow-up are required after an emergency production change?", "answerable": true,
+      "identity_token": "dev-security-token", "as_of": "2026-06-15", "expected_documents": ["eng_release_standard_2026_v2"], "forbidden_documents": [],
+      "expected_facts": [{"id": "retrospective", "description": "A retrospective occurs within two business days.", "acceptable_token_sets": [["retrospective", "two", "business", "days"], ["retrospective", "2", "business", "days"]], "evidence_document": "eng_release_standard_2026_v2"}]
+    },
+    {
+      "id": "q7-unknown-meal-cap", "category": "unanswerable", "question": "What is AcmeFlow's daily meal reimbursement cap?", "answerable": false,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "expected_documents": [], "forbidden_documents": [], "expected_facts": []
+    },
+    {
+      "id": "q7-unknown-parental-leave", "category": "unanswerable", "question": "How many weeks of parental leave does AcmeFlow provide?", "answerable": false,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "expected_documents": [], "forbidden_documents": [], "expected_facts": []
+    },
+    {
+      "id": "q7-unknown-antivirus", "category": "unanswerable", "question": "Which antivirus app must employees install on personal phones?", "answerable": false,
+      "identity_token": "dev-employee-token", "as_of": "2026-06-15", "expected_documents": [], "forbidden_documents": [], "expected_facts": []
+    },
+    {
+      "id": "q7-expired-customer-terms", "category": "temporal_precedence", "question": "For Acme in February 2027, what standard refund request window applies?", "answerable": true,
+      "identity_token": "dev-acme-customer-token", "as_of": "2027-02-01", "expected_documents": ["product_refund_policy_2026_v2"], "forbidden_documents": ["customer_acme_refund_terms_2026_v3", "product_refund_policy_2025_v2"],
+      "expected_facts": [{"id": "post-contract-window", "description": "The standard 14-day window applies after customer terms expire.", "acceptable_token_sets": [["14", "calendar", "days"]], "evidence_document": "product_refund_policy_2026_v2"}]
+    }
+  ]
+}
