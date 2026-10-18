@@ -6,6 +6,11 @@ on:
       image_tag:
         description: Immutable image tag, normally a tested Git SHA
         required: true
+      confirm_deploy:
+        description: Explicitly confirm the private Cloud Run deployment
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -13,6 +18,7 @@ permissions:
 
 jobs:
   deploy:
+    if: ${{ inputs.confirm_deploy }}
     environment: production
     runs-on: ubuntu-latest
     steps:
