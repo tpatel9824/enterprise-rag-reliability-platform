@@ -72,11 +72,11 @@ docker build -t "$REGION-docker.pkg.dev/$PROJECT_ID/acmeflow/acmeflow-rag:$IMAGE
 docker push "$REGION-docker.pkg.dev/$PROJECT_ID/acmeflow/acmeflow-rag:$IMAGE_TAG"
 
 python -m acmeflow_rag.artifact_store upload \
-  --source artifacts/phase5_v3/tfidf --type tfidf \
+  --source artifacts/v3/tfidf --type tfidf \
   --bucket "$ARTIFACT_BUCKET" --prefix indexes/v3/lexical/$IMAGE_TAG
 
 python -m acmeflow_rag.artifact_store upload \
-  --source artifacts/phase5_v3/dense --type dense \
+  --source artifacts/v3/dense --type dense \
   --bucket "$ARTIFACT_BUCKET" --prefix indexes/v3/dense/$IMAGE_TAG
 ```
 

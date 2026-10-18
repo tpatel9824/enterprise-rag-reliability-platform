@@ -74,12 +74,16 @@ failure rather than hiding it.
 ## Reproduce
 
 ```powershell
+python -m acmeflow_rag.ingest --retriever tfidf --corpus data/documents_v3 --artifacts-dir artifacts/v3/tfidf --max-words 40 --overlap-words 10 --corpus-version v3 --require-lifecycle
+python -m acmeflow_rag.ingest --retriever dense --corpus data/documents_v3 --artifacts-dir artifacts/v3/dense --max-words 40 --overlap-words 10 --corpus-version v3 --require-lifecycle
 $env:HF_HUB_OFFLINE = "1"
 $env:TRANSFORMERS_OFFLINE = "1"
 python -m acmeflow_rag.quality_evaluate
 ```
 
-This requires the v3 lexical/dense artifacts and cached model files. The command writes
+Dense ingestion downloads the pinned model revision on its first run if it is not cached; that is
+a free model download, not a paid API call. The evaluator itself defaults to offline mode and
+therefore fails rather than accessing the network if model files are absent. It writes
 machine-readable `artifacts/phase7/quality_report.json` and a Markdown report. The
 `artifacts/` directory stays untracked because indexes and generated measurements are
 local build outputs.

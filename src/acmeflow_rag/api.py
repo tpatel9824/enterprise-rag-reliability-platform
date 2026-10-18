@@ -4,6 +4,7 @@ from datetime import date
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
+from . import __version__
 from .artifact_store import GCSArtifactStore, LocalArtifactStore
 from .auth import AuthenticationError, build_identity_provider
 from .config import settings
@@ -66,7 +67,7 @@ async def lifespan(application: FastAPI):
 
 
 configure_logging(settings.log_level)
-app = FastAPI(title="AcmeFlow Enterprise RAG", version="0.6.0", lifespan=lifespan)
+app = FastAPI(title="AcmeFlow Enterprise RAG", version=__version__, lifespan=lifespan)
 metrics = ServiceMetrics()
 app.add_middleware(RequestMetricsMiddleware, metrics=metrics)
 

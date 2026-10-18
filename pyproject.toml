@@ -1,6 +1,6 @@
 [project]
 name = "acmeflow-enterprise-rag"
-version = "0.7.0"
+version = "0.8.0"
 description = "Evidence-grounded enterprise RAG reliability and governance platform"
 requires-python = ">=3.11"
 dependencies = [

@@ -46,8 +46,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--as-of", type=date.fromisoformat, default=date(2026, 6, 15))
     parser.add_argument("--department")
     parser.add_argument("--top-k", type=int, default=5)
-    parser.add_argument("--lexical-artifacts-dir", type=Path, default=ROOT / "artifacts/phase6_v3/tfidf")
-    parser.add_argument("--dense-artifacts-dir", type=Path, default=ROOT / "artifacts/phase6_v3/dense")
+    parser.add_argument("--lexical-artifacts-dir", type=Path, default=ROOT / "artifacts/v3/tfidf")
+    parser.add_argument("--dense-artifacts-dir", type=Path, default=ROOT / "artifacts/v3/dense")
     parser.add_argument("--identities", type=Path, default=settings.local_identities_path)
     return parser
 
