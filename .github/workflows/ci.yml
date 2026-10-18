@@ -39,16 +39,37 @@ jobs:
             acmeflow-rag:ci python -m acmeflow_rag.ingest \
             --retriever tfidf --corpus data/documents_v3 --artifacts-dir artifacts \
             --max-words 40 --overlap-words 10 --corpus-version v3 --require-lifecycle
-          docker run --rm -d --name acmeflow-rag-smoke -p 8080:8080 \
+          cleanup() {
+            docker rm -f acmeflow-rag-smoke >/dev/null 2>&1 || true
+          }
+          diagnose() {
+            echo "::group::Container logs"
+            docker logs acmeflow-rag-smoke 2>&1 || true
+            echo "::endgroup::"
+            echo "::group::Container inspect"
+            docker inspect acmeflow-rag-smoke 2>&1 || true
+            echo "::endgroup::"
+            exit_code="$(docker inspect --format '{{.State.ExitCode}}' acmeflow-rag-smoke 2>/dev/null || echo unavailable)"
+            state="$(docker inspect --format '{{.State.Status}}' acmeflow-rag-smoke 2>/dev/null || echo unavailable)"
+            echo "container_state=$state"
+            echo "container_exit_code=$exit_code"
+          }
+          trap cleanup EXIT
+          docker run -d --name acmeflow-rag-smoke -p 8080:8080 \
             -v "$PWD/data/identity:/app/data/identity:ro" \
             -v "$PWD/.docker-smoke-artifacts:/app/artifacts:ro" \
             acmeflow-rag:ci
-          trap 'docker rm -f acmeflow-rag-smoke || true' EXIT
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8080/ready; then exit 0; fi
+            if [ "$(docker inspect --format '{{.State.Running}}' acmeflow-rag-smoke 2>/dev/null || echo false)" != "true" ]; then
+              echo "Service container stopped before becoming ready."
+              diagnose
+              exit 1
+            fi
             sleep 2
           done
-          docker logs acmeflow-rag-smoke
+          echo "Service container did not become ready before the timeout."
+          diagnose
           exit 1
 
   secret-scan:
