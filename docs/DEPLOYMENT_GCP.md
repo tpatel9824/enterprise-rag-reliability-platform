@@ -1,7 +1,7 @@
 # Google Cloud deployment preparation
 
 This is a deployment runbook, not a record of a completed deployment. No APIs, IAM bindings,
-buckets, repositories, secrets, or Cloud Run services were created while implementing Phase 6.
+buckets, repositories, secrets, or Cloud Run services were created while preparing these adapters.
 
 ## Architecture and trust boundaries
 

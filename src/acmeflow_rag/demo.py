@@ -1,4 +1,4 @@
-"""Credential-free local local demonstration for structured RAG responses."""
+"""Credential-free local demonstration of structured RAG responses."""
 
 from __future__ import annotations
 

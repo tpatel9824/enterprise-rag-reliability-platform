@@ -1,4 +1,4 @@
-"""Offline evaluation for the Phase 1 retrieval and abstention baseline.
+"""Offline evaluation for retrieval and abstention baselines.
 
 The module keeps metric calculation separate from loading the production artifacts so the
 calculations can be tested with small, synthetic fixtures.

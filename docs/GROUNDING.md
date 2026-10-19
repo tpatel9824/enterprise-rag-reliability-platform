@@ -41,7 +41,7 @@ For every factual claim, validation checks that:
 Citation validity does not show that the cited passage entails the claim, that the claim correctly
 interprets the passage, that all necessary evidence was retrieved, or that the underlying document
 is current. `claim_evidence_coverage` measures citation presence only. Factual correctness and
-entailment require a separate evaluation methodology that is not implemented in Phase 4.
+entailment require separate evaluation methods and qualified review.
 
 ## Failure handling
 

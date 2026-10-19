@@ -1,7 +1,7 @@
 {
   "benchmark_name": "AcmeFlow RAG Evidence Policy Development Set",
   "version": "1.0",
-  "purpose": "Development-only threshold calibration; excluded from held-out Phase 4 reporting",
+  "purpose": "Development-only threshold calibration; excluded from held-out reporting",
   "corpus": "data/documents_v2",
   "case_count": 8,
   "cases": [

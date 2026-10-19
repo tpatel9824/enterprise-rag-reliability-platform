@@ -1,4 +1,4 @@
-"""Transparent, deterministic Phase 7 answer-quality proxies.
+"""Transparent, deterministic answer-quality proxies.
 
 These metrics deliberately avoid calling an LLM.  They are useful regression signals,
 not substitutes for independent human review or semantic entailment judging.

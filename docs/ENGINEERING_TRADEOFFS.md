@@ -2,7 +2,7 @@
 
 The project keeps retrieval strategies interchangeable so their costs and failure modes can be
 measured under identical corpus, chunking, authorization, and top-K settings. The numbers below
-come from the recorded Phase 7 local Windows CPU run over 16 synthetic, project-authored cases.
+come from the recorded local Windows CPU run over 16 synthetic, project-authored cases.
 They are regression evidence, not production benchmarks or proof of statistical superiority.
 
 ## Retrieval strategy comparison
@@ -21,7 +21,7 @@ already-authorized candidates; authorization cannot be deferred until after rera
 ## Evidence coverage versus answer quality
 
 All four strategies retrieved every required document within five distinct documents on the
-Phase 7 set, yet automated expected-fact coverage was only 0.235–0.353. Retrieval success did not
+quality set, yet automated expected-fact coverage was only 0.235–0.353. Retrieval success did not
 translate directly into a complete answer because the deterministic generator selects up to three
 overlapping sentences. This separation is intentional:
 
@@ -36,12 +36,12 @@ overlapping sentences. This separation is intentional:
 
 Each retrieval strategy has its own evidence policy because TF-IDF similarities, cosine
 similarities, RRF scores, and cross-encoder logits are not comparable or calibrated probabilities.
-On Phase 7, abstention F1 ranged from 0.571 to 0.667. Every strategy made at least one error.
+On the quality benchmark, abstention F1 ranged from 0.571 to 0.667. Every strategy made at least one error.
 
 Conservative abstention lowers unsupported-answer risk but can reject answerable queries. Permissive
 thresholds improve answer rate but can produce a cited, extractive, irrelevant response—as the
 meal-cap demo shows. The next rigorous step is a larger independently reviewed calibration set,
-not tuning on the held-out Phase 7 labels.
+not tuning on the held-out quality labels.
 
 ## Chunking
 

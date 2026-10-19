@@ -132,7 +132,7 @@ def test_demo_format_shows_abstention_and_empty_sources():
     assert "Sources:\n  (none)" in output
 
 
-def test_phase7_benchmark_is_valid_and_covers_required_scenarios():
+def test_quality_benchmark_is_valid_and_covers_required_scenarios():
     path = Path(__file__).parents[1] / "data/evaluation/quality_v3.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     validate_quality_benchmark(payload)

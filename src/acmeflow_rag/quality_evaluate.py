@@ -1,4 +1,4 @@
-"""Phase 7 offline end-to-end quality evaluation and comparison reporting."""
+"""Offline end-to-end quality evaluation and comparison reporting."""
 
 from __future__ import annotations
 
@@ -175,7 +175,7 @@ def evaluate_strategy(
 def render_markdown(payload: dict[str, Any]) -> str:
     review = payload["benchmark"]["review_provenance"]
     lines = [
-        "# Phase 7 offline quality evaluation",
+        "# Offline quality evaluation",
         "",
         f"Generated: {payload['generated_at']}",
         "",
@@ -246,13 +246,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run the Phase 7 offline quality benchmark")
+    parser = argparse.ArgumentParser(description="Run the offline quality benchmark")
     parser.add_argument("--benchmark", type=Path, default=ROOT / "data/evaluation/quality_v3.json")
     parser.add_argument("--strategies", nargs="+", choices=STRATEGIES, default=list(STRATEGIES))
     parser.add_argument("--lexical-artifacts-dir", type=Path, default=ROOT / "artifacts/v3/tfidf")
     parser.add_argument("--dense-artifacts-dir", type=Path, default=ROOT / "artifacts/v3/dense")
     parser.add_argument("--identities", type=Path, default=settings.local_identities_path)
-    parser.add_argument("--output-dir", type=Path, default=ROOT / "artifacts/phase7")
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "artifacts/evaluation/quality")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--candidate-k", type=int, default=settings.retrieval_candidate_k)
     parser.add_argument("--rrf-constant", type=int, default=settings.rrf_constant)

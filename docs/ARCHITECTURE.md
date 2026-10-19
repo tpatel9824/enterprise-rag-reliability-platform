@@ -1,90 +1,71 @@
-# Architecture — Phase 5
+# System architecture
 
 ```text
-AcmeFlow documents
-       |
-       v
- validated document loader
-       |
-       v
- section-aware chunker
-       |
-       v
- verified identity -> server-derived roles/customer scope
-       |
- lifecycle + policy precedence eligibility
-       |
- authorization + department eligibility
-       |
-       +-----------------------+
-       |                       |
-       v                       v
- TF-IDF retrieval       MiniLM + FAISS retrieval
-       |                       |
-       +-----------+-----------+
-                   |
-                   v
-       optional reciprocal rank fusion
-                   |
-                   v
-       optional cross-encoder reranking
-                   |
-                   v
-             top-k evidence
-                   |
-                   v
-       strategy-specific evidence assessment
-                   |
-          insufficient +----+ sufficient
-                   |              |
-                   v              v
-              no answer     grounded generator
-                                  |
-                                  v
-                       claim/citation validation
-                                  |
-                         invalid +----+ valid
-                                  |          |
-                                  v          v
-                             no answer   structured answer
-       |
-       +--> offline answer
-       |
-       +--> optional Gemini generation
+versioned documents -> validation -> section-aware chunks -> TF-IDF / FAISS artifacts
+                                                               |
+verified identity -> lifecycle and precedence -> authorization -+
+                                                               |
+                                            lexical / dense / RRF
+                                                               |
+                                              optional reranker
+                                                               |
+                                             evidence assessment
+                                                /          \
+                                          abstention     generation
+                                                            |
+                                                citation validation
+                                                            |
+                                                structured response
 ```
 
-Retrieval and generation are intentionally separate. This lets us determine whether a bad
-answer came from retrieval or from generation/grounding.
+## Ingestion
 
-The selectable retrieval strategies are `lexical`, `dense`, `hybrid`, and `hybrid_rerank`.
-Authorization and department filters are passed into both component retrievers before candidates
-can enter fusion or reranking. The pipeline validates returned candidates again and fails closed
-if an underlying retriever violates those constraints. This is retrieval-time filtering and does
-not by itself establish secure RBAC.
+The loader validates document metadata before chunking. The chunker preserves heading paths,
+document and lifecycle fields, access roles, source paths, and normalized source offsets. Stable
+chunk IDs derive from document ID, version, heading path, and text.
 
-Phase 5 removes client-provided roles from the API. Its local static-token identity provider is a
-development adapter, not production authentication. All eligibility constraints are applied before
-candidate text can reach hybrid fusion, the cross-encoder, Gemini, citations, or audit events.
+TF-IDF and dense artifacts persist independently. Dense artifacts record model name and revision,
+dimension, index type, corpus version, chunking settings, and ordered chunk IDs. Artifact manifests
+record file size and SHA-256 checksums.
 
-Evidence assessment is deliberately separate from retrieval and generation. Each strategy has its
-own policy because TF-IDF similarity, embedding cosine similarity, RRF scores, and cross-encoder
-logits have different meanings and scales. The policies consume relevance signals, not calibrated
-probabilities. Only evidence that survived retrieval authorization filters can be supplied to a
-generator or accepted by citation validation.
+## Query processing
 
-## Phase 7 evaluation boundary
+`RagService.ask` requires an authenticated `Principal` and an explicit or default as-of date.
+Policy selection identifies currently eligible standard or signed customer-specific documents.
+Roles, department, and eligible document IDs are passed into each component retriever before
+fusion or reranking.
 
-The offline quality runner sends identical held-out cases through each selectable retrieval
-pipeline and the real service boundary, including identity resolution, lifecycle selection,
-authorization, evidence assessment, generation, and citation validation. It records retrieval-only
-latency separately from end-to-end local service latency.
+The selectable strategies are `lexical`, `dense`, `hybrid`, and `hybrid_rerank`. Reciprocal Rank
+Fusion combines ranks instead of incomparable raw scores. The cross-encoder processes only the
+authorized hybrid candidate set. The pipeline validates candidates again and fails closed if a
+base retriever violates a constraint.
 
-Three answer properties remain intentionally distinct:
+## Evidence and generation
 
-1. citation validity checks that every cited chunk ID exists in authorized retrieved context;
-2. extractive claim support checks that a generated claim occurs in its cited passage; and
-3. expected-fact coverage checks explicit reference tokens in the final answer.
+Evidence assessment is separate from retrieval and generation. Each strategy uses a distinct
+policy because TF-IDF similarity, embedding cosine similarity, RRF scores, and cross-encoder
+logits have different meanings and scales. These relevance signals are not calibrated
+probabilities.
 
-None is a semantic factuality guarantee. Human review provenance belongs to the benchmark rather
-than the retrieval code, and the current Phase 7 benchmark truthfully records independent review
-as pending.
+Insufficient evidence produces a structured abstention before generation. Sufficient evidence is
+passed to either the deterministic extractive generator or the optional Gemini adapter. Citation
+validation requires every claim to cite a chunk in the authorized retrieved context. Citation
+existence does not establish factual correctness or entailment.
+
+## Evaluation boundary
+
+The quality runner sends identical held-out cases through each retrieval pipeline and service
+boundary, including identity resolution, policy selection, authorization, evidence assessment,
+generation, and citation validation. It records retrieval-only and end-to-end latency separately.
+
+Citation validity, extractive claim support, and expected-fact coverage remain distinct. None is a
+semantic factuality guarantee. Benchmark provenance records that independent review is pending.
+
+## Operations and external systems
+
+FastAPI exposes query, health, readiness, and metrics endpoints. Audit events contain identifiers
+and decisions without query, answer, or document text. Logs are structured for stdout ingestion.
+
+Local artifacts and deterministic generation are fully usable without cloud services. GCS,
+Gemini, and OIDC adapters have mock-based coverage only. Cloud Run and Workload Identity
+Federation files are deployment configuration and have not been exercised in GCP.

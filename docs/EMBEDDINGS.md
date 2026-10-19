@@ -4,7 +4,7 @@
 
 A sentence-transformer converts text into a fixed-length vector of floating-point numbers. Texts
 with similar learned meaning tend to point in similar directions, even when they do not share the
-same keywords. AcmeFlow Phase 2 uses `sentence-transformers/all-MiniLM-L6-v2`, whose expected
+same keywords. AcmeFlow uses `sentence-transformers/all-MiniLM-L6-v2`, whose expected
 output dimension is 384. The persisted metadata records the observed dimension rather than
 assuming it.
 
@@ -70,10 +70,10 @@ score could be attributed to the wrong source or access policy.
 
 ## Authorization filtering
 
-Phase 2 searches the complete exact index and applies role and department checks before a result
+The dense retriever searches the complete exact index and applies role and department checks before a result
 can enter the returned top K. Searching more candidates is necessary because filtering only an
 unfiltered top K could return too few authorized results. This is still application-level
-filtering based on roles supplied internally to the retriever. Phase 5 derives those roles through
+filtering based on roles supplied internally to the retriever. The service derives those roles through
 an identity-provider abstraction, but its local provider is not production authentication or RBAC.
 
 ## Limitations

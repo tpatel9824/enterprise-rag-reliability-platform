@@ -16,7 +16,7 @@ four strategies:
 Authorization roles and the optional department constraint are applied by each component before
 candidate selection. A second pipeline check rejects a component result that violates the request
 constraints. Unauthorized text therefore does not enter fusion or the reranker. This boundary is
-not secure authentication or RBAC. Phase 5 derives roles through an identity-provider interface;
+not secure authentication or RBAC. The service derives roles through an identity-provider interface;
 the included static local provider is development-only and production must integrate a trusted
 identity and entitlement system.
 
@@ -52,12 +52,12 @@ from measured retrieval latency; inference for every measured query is included.
 
 Cross-encoder outputs are raw ranking scores, not probabilities. RRF scores are also ranking
 scores. The service's legacy fixed abstention threshold has not been recalibrated for either
-scale, so Phase 3 retrieval comparisons should use ranking metrics—not cross-strategy abstention
+scale, so retrieval comparisons should use ranking metrics—not cross-strategy abstention
 comparisons.
 
 ## Persistence and reproducibility
 
-Lexical and dense component indexes remain independently persisted Phase 2 artifacts. Phase 3
+Lexical and dense component indexes remain independently persisted artifacts. Hybrid retrieval
 evaluation writes `pipeline_config.json` beside `retrieval_metrics.json`, recording the strategy,
 candidate count, RRF constant, and reranker model/revision. Hybrid loading requires the component
 indexes to contain the same ordered chunk IDs; a mismatch raises an error instead of silently

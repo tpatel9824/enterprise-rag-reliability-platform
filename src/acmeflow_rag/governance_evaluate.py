@@ -1,4 +1,4 @@
-"""Phase 5 lifecycle, precedence, and authorization evaluation."""
+"""Lifecycle, precedence, and authorization evaluation."""
 
 from __future__ import annotations
 

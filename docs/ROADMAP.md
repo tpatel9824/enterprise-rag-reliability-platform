@@ -1,7 +1,7 @@
 # Project status and roadmap
 
 Status labels are evidence-based: **implemented and verified**, **mock-tested**, **configuration
-only**, or **future work**. “Implemented” does not mean production-ready.
+only**, or **future work**. Implemented does not mean production-ready.
 
 ## Implemented and locally/CI verified
 
@@ -17,8 +17,8 @@ only**, or **future work**. “Implemented” does not mean production-ready.
   evaluation with machine-readable reports.
 - FastAPI endpoints, metadata-only audit events, content-safe structured logs, local metrics,
   non-root Docker image, container ingestion/readiness smoke test, and CI history scanning.
-- Latest verified CI: 81 tests, Ruff, dependency checks, Docker build/smoke test, and Gitleaks over
-  11 commits and approximately 435.72 KB, all passing in run 39160888964.
+- Latest verified CI: 85 tests, Ruff, dependency checks, Docker build/smoke test, and Gitleaks over
+  12 commits and approximately 467.54 KB, all passing in run 39164410475.
 
 ## Implemented adapters with mock-based tests only
 
