@@ -7,6 +7,7 @@ __pycache__
 *.egg-info
 .env
 .env.*
+.streamlit/secrets.toml
 gha-creds-*.json
 credentials.json
 service-account*.json

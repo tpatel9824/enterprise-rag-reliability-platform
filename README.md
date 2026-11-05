@@ -17,6 +17,8 @@ been verified, and the project does not claim production readiness.
 - strategy-specific evidence assessment and pre-generation abstention;
 - structured answers with claim-to-chunk mappings and authorized citation validation;
 - deterministic offline generation and an optional Vertex AI Gemini adapter;
+- a local Streamlit console for strategy comparison, grounded answers, citations, evidence,
+  version selection, authorization denial, and abstention;
 - local and GCS artifact-store adapters with manifest and checksum validation;
 - FastAPI endpoints, metadata-only audit events, structured logs, operational metrics, Docker,
   CI, and manually gated deployment configuration; and
@@ -85,6 +87,18 @@ python -m acmeflow_rag.demo --strategy lexical --token dev-support-token --as-of
 The response includes answerability status, a reason code, document and chunk IDs, evidence
 passages, structured claims, and claim-to-evidence mappings. See [Local demonstration](docs/DEMO.md)
 for grounded, denied, and unanswerable scenarios.
+
+For an interactive interface, build both v3 indexes and run:
+
+```bash
+python -m streamlit run src/acmeflow_rag/streamlit_app.py
+```
+
+The local console presents all four retrieval strategies, prepared governance scenarios, live
+end-to-end request latency, and the verified evaluation snapshot. It calls the same retrieval,
+authorization, lifecycle, evidence, generation, and citation code as the API. See
+[Interactive demonstration](docs/WEB_DEMO.md) for reproducible setup and a short recording
+storyboard.
 
 ## Retrieval strategies
 
@@ -248,6 +262,7 @@ deploy/               optional Cloud Run configuration
 - [Architecture](docs/ARCHITECTURE.md)
 - [Governance and security](docs/GOVERNANCE.md)
 - [Grounding and citations](docs/GROUNDING.md)
+- [Interactive local demonstration](docs/WEB_DEMO.md)
 - [Evaluation methodology and results](docs/EVALUATION.md)
 - [Engineering tradeoffs](docs/ENGINEERING_TRADEOFFS.md)
 - [Operational roadmap](docs/ROADMAP.md)

@@ -1,0 +1,16 @@
+{
+  "title": "Verified held-out quality benchmark",
+  "generated_at": "2026-10-18",
+  "corpus": "documents_v3",
+  "case_count": 16,
+  "top_k": 5,
+  "generator": "offline deterministic extractive",
+  "latency_scope": "Warm retrieval-only latency; model startup excluded, query embedding and reranking included.",
+  "review_status": "Project-authored synthetic labels; independent review pending.",
+  "strategies": [
+    {"strategy": "Lexical", "recall_at_1": 0.833, "recall_at_5": 1.000, "mrr": 0.903, "full_evidence_at_5": 1.000, "abstention_f1": 0.667, "forbidden_hits": 0, "mean_latency_ms": 1.69, "p95_latency_ms": 1.84},
+    {"strategy": "Dense", "recall_at_1": 0.917, "recall_at_5": 1.000, "mrr": 0.958, "full_evidence_at_5": 1.000, "abstention_f1": 0.571, "forbidden_hits": 0, "mean_latency_ms": 15.76, "p95_latency_ms": 18.40},
+    {"strategy": "Hybrid", "recall_at_1": 0.917, "recall_at_5": 1.000, "mrr": 0.944, "full_evidence_at_5": 1.000, "abstention_f1": 0.600, "forbidden_hits": 0, "mean_latency_ms": 28.41, "p95_latency_ms": 49.06},
+    {"strategy": "Hybrid + reranker", "recall_at_1": 0.917, "recall_at_5": 1.000, "mrr": 0.958, "full_evidence_at_5": 1.000, "abstention_f1": 0.667, "forbidden_hits": 0, "mean_latency_ms": 240.74, "p95_latency_ms": 370.87}
+  ]
+}

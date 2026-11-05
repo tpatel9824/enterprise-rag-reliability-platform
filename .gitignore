@@ -15,6 +15,7 @@ models/
 .env
 .env.*
 !.env.example
+.streamlit/secrets.toml
 credentials.json
 service-account*.json
 application_default_credentials.json

@@ -19,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 cloud = ["google-cloud-storage==3.17.0", "PyJWT[crypto]==2.10.1"]
 dev = ["pytest==9.1.1", "httpx==0.28.1", "ruff==0.14.2"]
+demo = ["streamlit==1.66.1"]
 
 [build-system]
 requires = ["setuptools>=68"]

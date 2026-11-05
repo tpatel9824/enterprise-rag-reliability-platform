@@ -30,6 +30,11 @@ record file size and SHA-256 checksums.
 
 ## Query processing
 
+FastAPI, the command-line client, and the local Streamlit console are presentation adapters over
+the same service and retrieval modules. The Streamlit layer adds no independent retrieval or
+generation implementation; it resolves labeled development identities server-side and forwards
+the resulting principal into `RagService.ask`.
+
 `RagService.ask` requires an authenticated `Principal` and an explicit or default as-of date.
 Policy selection identifies currently eligible standard or signed customer-specific documents.
 Roles, department, and eligible document IDs are passed into each component retriever before
